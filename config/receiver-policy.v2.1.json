@@ -1,0 +1,38 @@
+{
+  "protocol": "ROZUM_AI_v2",
+  "protocol_version": "2.1",
+  "timestamp": {
+    "max_age_seconds": 300,
+    "max_future_skew_seconds": 30,
+    "clock": "UTC"
+  },
+  "replay": {
+    "ttl_seconds": 360,
+    "scope": "configured_replay_store"
+  },
+  "require_known_reply": true,
+  "reply_required_intents": [
+    "inter_ai_task_response",
+    "inter_ai_task_result",
+    "protocol_error"
+  ],
+  "forbid_colon_in_free_signed_scalars": true,
+  "message_type_authoritative": false,
+  "reply_to_cryptographically_bound": false,
+  "allowed_intents": [
+    "argos_monitor",
+    "inter_ai_task_request",
+    "inter_ai_task_response",
+    "inter_ai_task_result",
+    "protocol_error",
+    "system_architecture_analyze"
+  ],
+  "allowed_roles": [
+    "architect",
+    "core",
+    "orchestrator",
+    "interface",
+    "navigator",
+    "system"
+  ]
+}

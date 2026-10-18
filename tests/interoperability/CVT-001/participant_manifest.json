@@ -1,0 +1,13 @@
+{
+  "sender_id": "agent_gemini_core",
+  "key_id": "key-v1",
+  "cryptographic_profile": "ROZUM-SIG-ED25519",
+  "public_key_hex": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+  "note": "TEST-ONLY / NON-PRODUCTION KEY MATERIAL. DO NOT USE IN PRODUCTION.",
+  "encoding_spec": {
+    "canonicalization_format": "RFC-8785-JCS",
+    "signature_format": "RAW-64-BYTES",
+    "signature_encoding": "BASE64-RFC-4648-WITH-PADDING",
+    "hashing_algorithm": "SHA-256-HEX"
+  }
+}

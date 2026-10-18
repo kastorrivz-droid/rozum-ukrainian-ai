@@ -1,0 +1,18 @@
+{
+  "warning": "TEST-ONLY. Never add production private keys or HMAC secrets to this file.",
+  "keys": [
+    {
+      "sender_id": "agent_gemini_core",
+      "key_id": "key-v1",
+      "profile": "ROZUM-SIG-ED25519",
+      "public_key_hex": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+      "active": true
+    },
+    {
+      "sender_id": "human_vladislav",
+      "key_id": "manual-channel",
+      "profile": "ROZUM-UNSIGNED-MANUAL",
+      "active": true
+    }
+  ]
+}

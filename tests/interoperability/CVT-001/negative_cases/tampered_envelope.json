@@ -1,0 +1,27 @@
+{
+  "protocol": "ROZUM_AI_v2",
+  "protocol_version": "2.1",
+  "id": "8f3d9b4a-1122-48a3-b900-7c2a11b06981",
+  "timestamp": "2026-08-22T08:50:00Z",
+  "sender_id": "agent_gemini_core",
+  "key_id": "key-v1",
+  "author": {
+    "id": "human_vladislav",
+    "role": "architect"
+  },
+  "intent": "inter_ai_task_request",
+  "reply_to": null,
+  "context": {
+    "session_id": "sess_2026_08",
+    "state": {
+      "step": 1
+    }
+  },
+  "data": {
+    "task": "crypto_verification",
+    "stage": 5
+  },
+  "question": "Выполнить верификацию RFC 8785 JCS, digests и signature",
+  "output_format": "protocol",
+  "signature": "N8SXVRHHrj3RndcFkAx8WsqTH39DqdPCJVLqSvy9raB3zOszADIN+jqubVNZE5P5FomhdzW9/OCoFv62NzcICg=="
+}

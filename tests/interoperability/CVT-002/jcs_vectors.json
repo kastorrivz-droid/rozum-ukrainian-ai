@@ -1,0 +1,46 @@
+{
+  "profile": "RFC8785",
+  "status": "PRE-CVT-002",
+  "vectors": [
+    {
+      "name": "object-order",
+      "value": {"z": 1, "a": 2, "nested": {"b": true, "a": null}},
+      "expected_utf8_hex": "7b2261223a322c226e6573746564223a7b2261223a6e756c6c2c2262223a747275657d2c227a223a317d"
+    },
+    {
+      "name": "number-rendering",
+      "value": {
+        "minus_zero": -0.0,
+        "decimal": 333333333.33333329,
+        "small": 0.002,
+        "tiny": 1e-27,
+        "large": 1e+30,
+        "safe_integer": 9007199254740991
+      },
+      "expected_utf8_hex": "7b22646563696d616c223a3333333333333333332e333333333333332c226c61726765223a31652b33302c226d696e75735f7a65726f223a302c22736166655f696e7465676572223a393030373139393235343734303939312c22736d616c6c223a302e3030322c2274696e79223a31652d32377d"
+    },
+    {
+      "name": "unicode-order",
+      "value": {
+        "\r": "carriage",
+        "1": "one",
+        "\u0080": "control",
+        "ö": "latin",
+        "€": "euro",
+        "𝄞": "music",
+        "דּ": "hebrew"
+      },
+      "expected_utf8_hex": "7b225c72223a226361727269616765222c2231223a226f6e65222c22c280223a22636f6e74726f6c222c22c3b6223a226c6174696e222c22e282ac223a226575726f222c22f09d849e223a226d75736963222c22efacb3223a22686562726577227d"
+    },
+    {
+      "name": "string-escaping",
+      "value": {"value": "line\nquote\"slash\\tab\t/ euro € music 𝄞"},
+      "expected_utf8_hex": "7b2276616c7565223a226c696e655c6e71756f74655c22736c6173685c5c7461625c742f206575726f20e282ac206d7573696320f09d849e227d"
+    },
+    {
+      "name": "nested-arrays",
+      "value": {"array": [3, {"β": "beta", "α": "alpha"}, [false, null, ""]]},
+      "expected_utf8_hex": "7b226172726179223a5b332c7b22ceb1223a22616c706861222c22ceb2223a2262657461227d2c5b66616c73652c6e756c6c2c22225d5d7d"
+    }
+  ]
+}

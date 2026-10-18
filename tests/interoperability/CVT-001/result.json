@@ -1,0 +1,45 @@
+{
+  "test_run_id": "CVT-001",
+  "protocol_version_tested": "2.1",
+  "timestamp": "2026-09-02T21:27:18.904047Z",
+  "environment": {
+    "python_version": "3.12.5 (main, Sep  4 2024, 23:16:18) [GCC 12.2.0]",
+    "os": "posix",
+    "libraries": {
+      "cryptography": "42.0.5"
+    }
+  },
+  "assertions": [
+    {
+      "id": "CVT-001.1",
+      "description": "JCS byte identity matching between implementations",
+      "status": "PASS"
+    },
+    {
+      "id": "CVT-001.2",
+      "description": "Deterministic Ed25519 signing validation using seed key material",
+      "status": "PASS"
+    },
+    {
+      "id": "CVT-001.3",
+      "description": "Strict 64-byte RAW Ed25519 signature verification PASS on receiver side",
+      "status": "PASS"
+    },
+    {
+      "id": "CVT-001.4",
+      "description": "Strict rejection of non-64-byte DER-encoded signatures",
+      "status": "PASS"
+    },
+    {
+      "id": "CVT-001.5",
+      "description": "Authoritative Replay Protection verification in Stage 5 Atomic Replay Commit",
+      "status": "PASS"
+    },
+    {
+      "id": "CVT-001.6",
+      "description": "Detection of message payload mutation (tamper-proofing verification)",
+      "status": "PASS"
+    }
+  ],
+  "overall_status": "PASS"
+}
