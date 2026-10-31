@@ -33,3 +33,21 @@ body{background:radial-gradient(ellipse at 70% 0%,#163a64 0%,transparent 40%),ra
 .bottom-manifesto{background:linear-gradient(130deg,#0b2340,#060c1a);border-block:1px solid #345b79}
 @media(max-width:900px){.hero-grid{grid-template-columns:1fr}.hero{padding:56px 0 28px;min-height:0}.hero-art{max-width:700px;width:100%;margin:auto}.hero-copy h1{font-size:clamp(2.7rem,9vw,4.8rem)}}
 @media(max-width:760px){.nav{background:#07152a}.hero-bottom{gap:12px;flex-wrap:wrap}.hero-art{padding:10px}.hero-art .art-caption{font-size:.65rem}}
+
+/* v0.2 visual polish: interactive depth, accessibility, mobile navigation */
+:root{--focus:#8fe4ff}
+a:focus-visible,button:focus-visible,[role="tab"]:focus-visible{outline:3px solid var(--focus);outline-offset:4px}
+.button,.nav-cta{position:relative;isolation:isolate;box-shadow:inset 0 1px rgba(255,255,255,.22),0 9px 28px rgba(0,0,0,.28)}
+.button-primary:hover,.nav-cta:hover{background:linear-gradient(120deg,#ffe5a9,#f0b75e);box-shadow:0 0 34px rgba(234,193,119,.32)}
+.button-ghost:hover{background:#1b4167;color:#fff;border-color:#8edfff}
+.button:active,.nav-cta:active{transform:translateY(1px);box-shadow:0 3px 10px #0007}
+.hero-art{transition:box-shadow .3s,border-color .3s;backdrop-filter:blur(10px)}
+.hero-art:hover{border-color:#efc87e;box-shadow:0 0 80px #178fcb3b,inset 0 0 45px #4b9ac21b}
+.hero-art .art-image{overflow:hidden;border-radius:20px}
+.hero-art .art-image img{transition:transform .65s cubic-bezier(.2,.8,.2,1);object-position:center}
+.hero-art:hover .art-image img{transform:scale(1.025)}
+.project-card,.social-card{backdrop-filter:blur(8px)}
+.social-card:focus-visible,.project-card:focus-within{border-color:#8fe4ff}
+@media(max-width:760px){.hero-actions{display:flex;flex-wrap:wrap;gap:12px}.hero-actions .button{min-height:48px;justify-content:center}.hero-art{border-radius:18px}.hero-art .art-image img{border-radius:12px}.site-header{backdrop-filter:blur(16px)}}
+@media(max-width:420px){.hero-actions{flex-direction:column;align-items:stretch}.hero-actions .button{width:100%;text-align:center}.hero-copy h1{overflow-wrap:break-word}}
+@media(prefers-reduced-motion:reduce){.hero-art .art-image img,.hero-art,.button,.nav-cta,.social-card,.project-card{transition:none!important;transform:none!important}}
