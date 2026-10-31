@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://kastorrivz-droid.github.io/rozum-ukrainian-ai/sitemap.xml
