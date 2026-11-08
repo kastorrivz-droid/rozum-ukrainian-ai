@@ -33,3 +33,21 @@ body{background:radial-gradient(ellipse at 70% 0%,#163a64 0%,transparent 40%),ra
 .bottom-manifesto{background:linear-gradient(130deg,#0b2340,#060c1a);border-block:1px solid #345b79}
 @media(max-width:900px){.hero-grid{grid-template-columns:1fr}.hero{padding:56px 0 28px;min-height:0}.hero-art{max-width:700px;width:100%;margin:auto}.hero-copy h1{font-size:clamp(2.7rem,9vw,4.8rem)}}
 @media(max-width:760px){.nav{background:#07152a}.hero-bottom{gap:12px;flex-wrap:wrap}.hero-art{padding:10px}.hero-art .art-caption{font-size:.65rem}}
+
+
+/* 2026-11 ROZUM Ukrainian-first visual refresh */
+.hero-promise{display:inline-flex;align-items:center;flex-wrap:wrap;gap:.55rem;padding:.6rem 1rem;border:1px solid #e7c07852;border-radius:999px;background:#101f33d9;color:#ffdc9d;font-size:.82rem;font-weight:650;letter-spacing:.015em;margin:0 0 18px;box-shadow:inset 0 1px #fff1}
+.hero-promise span:first-child{font-size:1.1rem;color:#69d7ff;line-height:1}
+.hero-art{isolation:isolate;overflow:hidden}
+.hero-art:before{content:"";position:absolute;z-index:0;inset:-30%;border-radius:50%;background:radial-gradient(circle,#3c9bd636,transparent 57%);pointer-events:none}
+.hero-art .art-image{z-index:1}
+.hero-art .art-image img{aspect-ratio:1200/760;object-fit:cover;object-position:center;filter:drop-shadow(0 12px 33px #0009)}
+.panorama-frame{position:relative;background:radial-gradient(ellipse at center,#163e6c,#030a18)}
+.panorama-frame>img{height:clamp(220px,42vw,500px);object-position:center 50%;filter:saturate(1.08)}
+.panorama-foot{background:linear-gradient(90deg,#081a30,#050d1d)}
+.project-note{line-height:1.5}
+.social-card{transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.social-card:hover{box-shadow:0 0 36px #2b83bd32;transform:translateY(-3px)}
+a:focus-visible,button:focus-visible{outline:3px solid #7cdcff;outline-offset:4px}
+@media(max-width:760px){.hero-promise{border-radius:14px;font-size:.75rem}.hero-art .art-caption{letter-spacing:.02em}.panorama-frame>img{height:240px}.hero-lead{font-size:1.03rem}}
+@media(prefers-reduced-motion:reduce){.social-card,.button,.nav-cta,.project-card{transition:none}}
