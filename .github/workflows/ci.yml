@@ -45,6 +45,9 @@ jobs:
       - name: Run receiver tests
         run: python -m unittest discover -s tests/runtime -t . -v
 
+      - name: Run Reeves API prototype tests
+        run: python -m unittest discover -s tests/reeves_api -t . -v
+
       - name: Reproduce CVT-001
         run: rozum cvt-001
 
@@ -66,3 +69,12 @@ jobs:
 
       - name: Compare independent JCS bytes and CVT-001 signing input
         run: node runtime/js-jcs/verify-cvt001.mjs --json
+
+      - name: Test local assistant knowledge engine
+        run: node tests/assistant-engine.test.cjs
+
+      - name: Test browser API client and local fallback
+        run: node tests/assistant-client.test.cjs
+
+      - name: Test opt-in browser memory
+        run: node tests/assistant-memory.test.cjs

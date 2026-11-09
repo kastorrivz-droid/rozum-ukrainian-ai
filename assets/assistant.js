@@ -1,135 +1,12 @@
 (() => {
   'use strict';
 
-  const answers = [
-    {
-      id: 'greeting',
-      patterns: [/(привіт|вітаю|добрий день|доброго дня|привет|здравствуй|здравствуйте|добрый день|hello)/i],
-      uk: 'Вітаю! Я допоможу зорієнтуватися в ROZUM. Можна запитати про архітектуру, ролі Argos, Reeves і Andromeda, принципи перевірки або межі цього демо.',
-      ru: 'Привет! Я помогу сориентироваться в ROZUM. Можно спросить об архитектуре, ролях Argos, Reeves и Andromeda, принципах проверки или границах этого демо.'
-    },
-    {
-      id: 'demo',
-      patterns: [/(що|что).*(вміє|умеет).*(демо|сайт|ассистент|асистент)/i, /(меж|огранич|можливост|возможност).*(демо|ассистент|асистент)/i, /(генератив|нейромереж|нейросет|справочник|довідник)/i],
-      uk: 'Це публічний локальний довідник, а не підключена генеративна модель. Він розпізнає теми з відкритих матеріалів ROZUM і дає підготовлені відповіді. Він не виконує зовнішніх дій, не перевіряє нові факти в інтернеті та не зберігає діалог.',
-      ru: 'Это публичный локальный справочник, а не подключённая генеративная модель. Он распознаёт темы из открытых материалов ROZUM и даёт подготовленные ответы. Он не выполняет внешние действия, не проверяет новые факты в интернете и не сохраняет диалог.'
-    },
-    {
-      id: 'privacy',
-      patterns: [/(пам[’'`]?ят|памят|запомин|зберіга|сохраня|данн|приват|конфіденц|конфиденц)/i],
-      uk: 'У цьому демо немає довготривалої пам’яті. Текст обробляється лише у вашому браузері, не надсилається на сервер і зникає після оновлення сторінки. Не вводьте особисті, медичні, фінансові чи секретні дані.',
-      ru: 'У этого демо нет долговременной памяти. Текст обрабатывается только в вашем браузере, не отправляется на сервер и исчезает после обновления страницы. Не вводите личные, медицинские, финансовые или секретные данные.'
-    },
-    {
-      id: 'free',
-      patterns: [/(безкоштов|бесплатн|платн|вартіст|стоимост|ціна|цена)/i],
-      uk: 'Поточний публічний сайт і це демо доступні безкоштовно. Це не обіцянка щодо всіх майбутніх функцій або сервісів: продуктова модель ROZUM ще розвивається.',
-      ru: 'Текущий публичный сайт и это демо доступны бесплатно. Это не обещание для всех будущих функций или сервисов: продуктовая модель ROZUM ещё развивается.'
-    },
-    {
-      id: 'status',
-      patterns: [/(статус|стан|готовн|готово|реліз|релиз|версія проєкту|версия проекта)/i],
-      uk: 'Відкритий Knowledge Pack цього сайту — робочий знімок, а не заява про готову автономну операційну систему. У ньому протокол 2.1 має статус робочої основи, Argos — VALIDATED, а Reeves і Andromeda — PROPOSED. Новіші або приватні матеріали не слід автоматично вважати частиною цього публічного демо.',
-      ru: 'Открытый Knowledge Pack этого сайта — рабочий снимок, а не заявление о готовой автономной операционной системе. В нём протокол 2.1 имеет статус рабочей основы, Argos — VALIDATED, а Reeves и Andromeda — PROPOSED. Более новые или закрытые материалы нельзя автоматически считать частью этого публичного демо.'
-    },
-    {
-      id: 'participate',
-      patterns: [/(долуч|приєдна|участв|присоедин|внесок|вклад|github|відкрит.*матеріал|открыт.*материал)/i],
-      uk: 'Публічні матеріали й код можна переглянути за посиланням «Відкриті матеріали» у верхньому меню. Перед пропозицією змін варто вказати джерело, очікуваний статус і спосіб перевірки — так ідея не змішається з уже прийнятими рішеннями.',
-      ru: 'Публичные материалы и код можно посмотреть по ссылке «Открытые материалы» в верхнем меню. Перед предложением изменений стоит указать источник, ожидаемый статус и способ проверки — так идея не смешается с уже принятыми решениями.'
-    },
-    {
-      id: 'human',
-      patterns: [/(людин|человек|архітектор|архитектор|хто.*ріш|кто.*реш|authority|контрол)/i],
-      uk: 'Human Architect визначає цілі, межі та допустимий ризик, затверджує нормативні зміни й може зупинити або переорієнтувати систему. ШІ готує аналіз і рекомендації, але остаточне рішення залишається за людиною.',
-      ru: 'Human Architect определяет цели, границы и допустимый риск, утверждает нормативные изменения и может остановить или перенаправить систему. ИИ готовит анализ и рекомендации, но окончательное решение остаётся за человеком.'
-    },
-    {
-      id: 'roles',
-      patterns: [/(рол[іья]|команд|агент).*(rozum|розум|систем)/i, /(як|как).*(працю|работ).*(рол|команд|агент)/i, /(argos|аргос).*(reeves|ривз|рівз)/i],
-      uk: 'У ROZUM ролі розділені. Human Architect ухвалює рішення; ROZUM Core відокремлює контекст, факти й гіпотези; Argos керує маршрутом перевірки; Reeves пояснює зрозумілою мовою; Andromeda аналізує архітектуру та залежності. Розділення ролей зменшує ризик, що одна система сама запропонує, перевірить і затвердить власну ідею.',
-      ru: 'В ROZUM роли разделены. Human Architect принимает решения; ROZUM Core отделяет контекст, факты и гипотезы; Argos управляет маршрутом проверки; Reeves объясняет понятным языком; Andromeda анализирует архитектуру и зависимости. Разделение ролей снижает риск, что одна система сама предложит, проверит и утвердит свою идею.'
-    },
-    {
-      id: 'argos',
-      patterns: [/(argos|аргос)/i],
-      uk: 'Argos — валідований шар оркестрації ROZUM. Він зберігає стан і походження повідомлення, проводить його обов’язковими стадіями перевірки, розділяє Explore і Validate та фіксує результат. Його завдання — не дозволити сирій гіпотезі непомітно стати нормативним рішенням.',
-      ru: 'Argos — валидированный слой оркестрации ROZUM. Он сохраняет состояние и происхождение сообщения, проводит его через обязательные стадии проверки, разделяет Explore и Validate и фиксирует результат. Его задача — не позволить сырой гипотезе незаметно стать нормативным решением.'
-    },
-    {
-      id: 'reeves',
-      patterns: [/(reeves|ривз|рівз)/i],
-      uk: 'Reeves — запропонований людський голос і діалоговий інтерфейс ROZUM. Він допомагає перетворити вільну думку на ясну структуру, відокремлює факт від гіпотези та пояснює технічний результат. Статус ролі в публічному Knowledge Pack — PROPOSED: Ривз не підмінює перевірку Argos або рішення людини.',
-      ru: 'Ривз — предлагаемый человеческий голос и диалоговый интерфейс ROZUM. Он помогает превратить свободную мысль в ясную структуру, отделяет факт от гипотезы и объясняет технический результат. Статус роли в публичном Knowledge Pack — PROPOSED: Ривз не подменяет проверку Argos или решение человека.'
-    },
-    {
-      id: 'andromeda',
-      patterns: [/(andromeda|андромед)/i],
-      uk: 'Andromeda — запропонований навігатор з архітектури та варіантів рішення. Вона виявляє залежності, допущення, ризики й можливі маршрути, але не змінює нормативний шар самостійно. Її рекомендації мають пройти перевірку та рішення Human Architect.',
-      ru: 'Andromeda — предлагаемый навигатор по архитектуре и вариантам решения. Она выявляет зависимости, допущения, риски и возможные маршруты, но не меняет нормативный слой самостоятельно. Её рекомендации должны пройти проверку и решение Human Architect.'
-    },
-    {
-      id: 'protocol',
-      patterns: [/(протокол|пакет|конверт|json|version|версі|верси|2\.1|підпис|подпис)/i],
-      uk: 'ROZUM_AI_v2 — структурований JSON-конверт для передачі завдань, результатів і контексту між людиною та агентами. Відкритий пакет цього сайту описує робочий профіль 2.1: у ньому зберігаються ідентичність сесії, автор, походження, зв’язок відповіді з запитом і реальний підпис або null. Непідписаний пакет не вважається криптографічно перевіреним.',
-      ru: 'ROZUM_AI_v2 — структурированный JSON-конверт для передачи задач, результатов и контекста между человеком и агентами. Открытый пакет этого сайта описывает рабочий профиль 2.1: в нём сохраняются идентичность сессии, автор, происхождение, связь ответа с запросом и реальная подпись либо null. Неподписанный пакет не считается криптографически проверенным.'
-    },
-    {
-      id: 'verification',
-      patterns: [/(перевір|проверк|валідац|валидац|факт|гіпотез|гипотез|довір|довер|безпек|безопас)/i],
-      uk: 'ROZUM розділяє сигнал, контекст, гіпотезу та висновок. Важливе твердження повинно мати джерело, статус і історію. Для протоколу перевірка проходить послідовно: структура → семантика → попередня replay-перевірка → криптографія → атомарна фіксація. Успіх структури сам по собі не доводить правдивість або авторство.',
-      ru: 'ROZUM разделяет сигнал, контекст, гипотезу и вывод. Важное утверждение должно иметь источник, статус и историю. Для протокола проверка идёт последовательно: структура → семантика → предварительная replay-проверка → криптография → атомарная фиксация. Успех структурной проверки сам по себе не доказывает истинность или авторство.'
-    },
-    {
-      id: 'principles',
-      patterns: [/(принцип|правил|основ).*(rozum|розум)/i, /(traceability|fail closed|interoperability|no fabricated)/i],
-      uk: 'Ключові принципи ROZUM: людина зберігає остаточну владу; важливі твердження мають джерело й історію; генерація відокремлена від валідації; сумнів у безпеці завершується відмовою, а не мовчазним прийняттям; докази не вигадуються; добробут людини важливіший за швидкість.',
-      ru: 'Ключевые принципы ROZUM: человек сохраняет окончательную власть; важные утверждения имеют источник и историю; генерация отделена от валидации; сомнение в безопасности ведёт к отказу, а не молчаливому принятию; доказательства не выдумываются; благополучие человека важнее скорости.'
-    },
-    {
-      id: 'overview',
-      patterns: [/(rozum|rosum|розум).*(os|ос|систем|архітектур|архитектур|таке|такое)/i, /(що|что|як працює|как работает).*(rozum|rosum|розум)/i, /(архітектур|архитектур).*(спільн|совместн).*(мислен|мышлен)/i],
-      uk: 'ROZUM OS — архітектура спільного мислення людини та кількох ШІ, де сенс, оркестрація, пам’ять, перевірка й діалог розділені на явні ролі. Її мета — зробити шлях від ідеї до рішення відтворюваним: хто запропонував, що перевірено, який статус має твердження і чому людина його прийняла.',
-      ru: 'ROZUM OS — архитектура совместного мышления человека и нескольких ИИ, где смысл, оркестрация, память, проверка и диалог разделены на явные роли. Её цель — сделать путь от идеи к решению воспроизводимым: кто предложил, что проверено, какой статус у утверждения и почему человек его принял.'
-    },
-    {
-      id: 'thanks',
-      patterns: [/(дякую|спасиб|благодарю|thanks)/i],
-      uk: 'Будь ласка. Якщо захочете продовжити, запитайте про будь-яку роль ROZUM або про шлях від гіпотези до перевіреного рішення.',
-      ru: 'Пожалуйста. Если захотите продолжить, спросите о любой роли ROZUM или о пути от гипотезы к проверенному решению.'
-    }
-  ];
-
-  function detectLanguage(text) {
-    const value = text.toLowerCase();
-    const words = value.match(/\p{L}+/gu) || [];
-    const countWords = terms => terms.reduce((total, term) => total + words.filter(word => word === term).length, 0);
-    const ukrainian = (value.match(/[іїєґ]/g) || []).length * 2
-      + countWords(['що', 'як', 'чи', 'хто', 'для', 'про', 'або', 'це', 'таке', 'працює', 'дякую']);
-    const russian = (value.match(/[ыэъё]/g) || []).length * 2
-      + countWords(['что', 'как', 'кто', 'для', 'или', 'это', 'такое', 'работает', 'спасибо']);
-    return russian > ukrainian ? 'ru' : 'uk';
-  }
-
-  function reply(raw) {
-    const text = String(raw || '').trim().replace(/\s+/g, ' ');
-    const language = detectLanguage(text);
-    const match = answers.find(item => item.patterns.some(pattern => pattern.test(text)));
-    if (match) return { id: match.id, language, text: match[language] };
-
-    return {
-      id: 'fallback',
-      language,
-      text: language === 'ru'
-        ? 'В открытой справке пока нет точного ответа на этот вопрос. Попробуйте спросить о ROZUM OS, ролях Argos, Ривза и Андромеды, проверке фактов, протоколе или границах демо.'
-        : 'У відкритій довідці поки немає точної відповіді на це запитання. Спробуйте запитати про ROZUM OS, ролі Argos, Reeves і Andromeda, перевірку фактів, протокол або межі демо.'
-    };
-  }
-
-  const api = { detectLanguage, reply };
-  if (typeof window !== 'undefined') window.ROZUMAssistantEngine = api;
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  if (typeof document === 'undefined') return;
+  const engine = globalThis.ROZUMAssistantEngine;
+  const clientFactory = globalThis.ROZUMAssistantClient;
+  const memoryFactory = globalThis.ROZUMAssistantMemory;
+  if (!engine || !clientFactory || !memoryFactory) return;
+  const client = clientFactory.create({ engine });
+  const memory = memoryFactory.create();
 
   const messages = document.getElementById('messages');
   const form = document.getElementById('chat');
@@ -137,36 +14,103 @@
   const counter = document.getElementById('counter');
   const clearButton = document.getElementById('clear-chat');
   const liveStatus = document.getElementById('live-status');
+  const sessionState = document.getElementById('session-state');
+  const chipsBox = document.getElementById('chips');
+  const assistantMode = document.getElementById('assistant-mode');
+  const privacyNote = document.getElementById('privacy-note');
+  const memoryConsent = document.getElementById('memory-consent');
+  const memoryView = document.getElementById('memory-view');
+  const memoryCount = document.getElementById('memory-count');
+  const memoryDialog = document.getElementById('memory-dialog');
+  const memoryList = document.getElementById('memory-list');
+  const memoryClose = document.getElementById('memory-close');
+  const memoryDelete = document.getElementById('memory-delete');
   const sendButton = form.querySelector('[type="submit"]');
-  const chips = [...document.querySelectorAll('[data-q]')];
   const initialMessage = messages.innerHTML;
-  let pendingTimer = null;
+  const initialChips = chipsBox.innerHTML;
+  let session = engine.createSession('uk');
+  let conversationHistory = memory.load().slice(-12).map(({ role, content }) => ({ role, content }));
+  let requestToken = 0;
+  let isPending = false;
+
+  const ui = {
+    uk: {
+      user: 'Ви', assistant: 'Ривз · публічна бета', searching: 'Шукаю відповідь у відкритій довідці', ready: 'Відповідь готова',
+      cleared: 'Діалог очищено', session: turns => `Контекст сеансу · ${turns} ${turns === 1 ? 'відповідь' : 'відповідей'}`,
+      source: 'Джерело', copy: 'Копіювати', copied: 'Скопійовано', placeholder: 'Запитайте про ROZUM…'
+    },
+    ru: {
+      user: 'Вы', assistant: 'Ривз · публичная бета', searching: 'Ищу ответ в открытой справке', ready: 'Ответ готов',
+      cleared: 'Диалог очищен', session: turns => `Контекст сеанса · ${turns} ${turns === 1 ? 'ответ' : 'ответов'}`,
+      source: 'Источник', copy: 'Копировать', copied: 'Скопировано', placeholder: 'Спросите о ROZUM…'
+    }
+  };
 
   function scrollToLatest() {
     messages.scrollTop = messages.scrollHeight;
   }
 
-  function addMessage(text, who) {
+  function addUserMessage(text, language) {
     const article = document.createElement('article');
-    article.className = `message ${who}`;
-
+    article.className = 'message user';
     const role = document.createElement('span');
     role.className = 'message-role';
-    role.textContent = who === 'user' ? 'Ви' : 'Ривз · довідка';
-
+    role.textContent = ui[language].user;
     const body = document.createElement('p');
     body.textContent = text;
-
     article.append(role, body);
     messages.append(article);
     scrollToLatest();
-    return article;
   }
 
-  function addTyping() {
+  function addBotMessage(result) {
+    const article = document.createElement('article');
+    article.className = 'message bot';
+    const role = document.createElement('span');
+    role.className = 'message-role';
+    role.textContent = ui[result.language].assistant;
+    const body = document.createElement('p');
+    body.textContent = result.text;
+    article.append(role, body);
+
+    const footer = document.createElement('div');
+    footer.className = 'message-footer';
+    if (result.source) {
+      const source = document.createElement('a');
+      source.className = 'message-source';
+      source.href = result.source.url;
+      source.target = '_blank';
+      source.rel = 'noopener noreferrer';
+      source.textContent = `${ui[result.language].source}: ${result.source.file}`;
+      const status = document.createElement('span');
+      status.className = 'source-status';
+      status.textContent = result.source.status;
+      footer.append(source, status);
+    }
+
+    const copy = document.createElement('button');
+    copy.className = 'copy-button';
+    copy.type = 'button';
+    copy.textContent = ui[result.language].copy;
+    copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(result.text);
+        copy.textContent = ui[result.language].copied;
+        window.setTimeout(() => { copy.textContent = ui[result.language].copy; }, 1200);
+      } catch {
+        copy.remove();
+      }
+    });
+    footer.append(copy);
+    article.append(footer);
+    messages.append(article);
+    scrollToLatest();
+  }
+
+  function addTyping(language) {
     const typing = document.createElement('div');
     typing.className = 'message bot typing';
-    typing.setAttribute('aria-label', 'Пошук відповіді у локальній довідці');
+    typing.setAttribute('aria-label', ui[language].searching);
     typing.innerHTML = '<i></i><i></i><i></i>';
     messages.append(typing);
     scrollToLatest();
@@ -175,7 +119,7 @@
 
   function setBusy(isBusy) {
     sendButton.disabled = isBusy;
-    chips.forEach(chip => { chip.disabled = isBusy; });
+    [...chipsBox.querySelectorAll('button')].forEach(chip => { chip.disabled = isBusy; });
     messages.setAttribute('aria-busy', String(isBusy));
   }
 
@@ -185,26 +129,99 @@
     counter.textContent = `${input.value.length}/600`;
   }
 
-  function send(value) {
-    const question = String(value || '').trim();
-    if (!question || pendingTimer) return;
+  function renderSuggestions(suggestions) {
+    chipsBox.replaceChildren();
+    suggestions.forEach(suggestion => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.q = suggestion.query;
+      button.textContent = suggestion.label;
+      button.addEventListener('click', () => send(suggestion.query));
+      chipsBox.append(button);
+    });
+  }
 
-    addMessage(question, 'user');
+  function updateSessionUI(language) {
+    sessionState.textContent = ui[language].session(session.turns);
+    input.placeholder = ui[language].placeholder;
+  }
+
+  function updateMemoryUI() {
+    const enabled = memory.isEnabled();
+    const saved = memory.load();
+    memoryConsent.checked = enabled;
+    memoryCount.textContent = String(saved.length);
+    memoryView.disabled = !enabled;
+  }
+
+  function renderMemory() {
+    const saved = memory.load();
+    memoryList.replaceChildren();
+    if (!saved.length) {
+      const empty = document.createElement('p');
+      empty.className = 'memory-empty';
+      empty.textContent = 'Історія порожня.';
+      memoryList.append(empty);
+      return;
+    }
+    saved.forEach(turn => {
+      const item = document.createElement('article');
+      item.className = `memory-item ${turn.role}`;
+      const role = document.createElement('strong');
+      role.textContent = turn.role === 'user' ? 'Ви' : 'Ривз';
+      const body = document.createElement('p');
+      body.textContent = turn.content;
+      const time = document.createElement('time');
+      time.dateTime = turn.at;
+      time.textContent = new Date(turn.at).toLocaleString();
+      item.append(role, body, time);
+      memoryList.append(item);
+    });
+  }
+
+  async function send(value) {
+    const question = String(value || '').trim();
+    if (!question || isPending) return;
+
+    const language = engine.detectLanguage(question, session.language);
+    addUserMessage(question, language);
     input.value = '';
     resizeInput();
     setBusy(true);
-    const typing = addTyping();
-    const result = reply(question);
-    liveStatus.textContent = result.language === 'ru' ? 'Ищу ответ в локальной справке' : 'Шукаю відповідь у локальній довідці';
+    isPending = true;
+    const token = ++requestToken;
+    const typing = addTyping(language);
+    liveStatus.textContent = ui[language].searching;
 
-    pendingTimer = window.setTimeout(() => {
+    const minimumDelay = new Promise(resolve => window.setTimeout(resolve, 250));
+    const [result] = await Promise.all([
+      client.reply(question, session, conversationHistory),
+      minimumDelay
+    ]);
+    if (token !== requestToken) return;
+
+    try {
       typing.remove();
-      addMessage(result.text, 'bot');
-      pendingTimer = null;
-      setBusy(false);
-      liveStatus.textContent = result.language === 'ru' ? 'Ответ готов' : 'Відповідь готова';
+      session = result.state;
+      conversationHistory.push(
+        { role: 'user', content: question },
+        { role: 'assistant', content: result.text }
+      );
+      conversationHistory = conversationHistory.slice(-12);
+      memory.append([
+        { role: 'user', content: question },
+        { role: 'assistant', content: result.text }
+      ]);
+      updateMemoryUI();
+      addBotMessage(result);
+      renderSuggestions(result.suggestions);
+      updateSessionUI(result.language);
+      liveStatus.textContent = ui[result.language].ready;
       input.focus();
-    }, 360);
+    } finally {
+      isPending = false;
+      setBusy(false);
+    }
   }
 
   form.addEventListener('submit', event => {
@@ -220,20 +237,52 @@
     }
   });
 
-  chips.forEach(chip => chip.addEventListener('click', () => send(chip.dataset.q)));
+  chipsBox.querySelectorAll('[data-q]').forEach(chip => chip.addEventListener('click', () => send(chip.dataset.q)));
 
   clearButton.addEventListener('click', () => {
-    if (pendingTimer) {
-      window.clearTimeout(pendingTimer);
-      pendingTimer = null;
-    }
+    requestToken += 1;
+    isPending = false;
+    session = engine.createSession('uk');
+    conversationHistory = [];
     messages.innerHTML = initialMessage;
+    chipsBox.innerHTML = initialChips;
+    chipsBox.querySelectorAll('[data-q]').forEach(chip => chip.addEventListener('click', () => send(chip.dataset.q)));
     setBusy(false);
-    liveStatus.textContent = 'Діалог очищено';
+    liveStatus.textContent = ui.uk.cleared;
     input.value = '';
     resizeInput();
+    updateSessionUI('uk');
     input.focus();
   });
 
+  memoryConsent.addEventListener('change', () => {
+    const enabled = memory.setConsent(memoryConsent.checked);
+    if (!enabled) conversationHistory = [];
+    updateMemoryUI();
+  });
+
+  memoryView.addEventListener('click', () => {
+    renderMemory();
+    if (typeof memoryDialog.showModal === 'function') memoryDialog.showModal();
+    else memoryDialog.setAttribute('open', '');
+  });
+
+  memoryClose.addEventListener('click', () => {
+    if (typeof memoryDialog.close === 'function') memoryDialog.close();
+    else memoryDialog.removeAttribute('open');
+  });
+  memoryDelete.addEventListener('click', () => {
+    memory.clear();
+    conversationHistory = [];
+    renderMemory();
+    updateMemoryUI();
+  });
+
   resizeInput();
+  updateSessionUI('uk');
+  updateMemoryUI();
+  if (client.isRemoteEnabled) {
+    assistantMode.lastChild.textContent = ' Публічна бета · захищений серверний діалог';
+    privacyNote.innerHTML = '<strong>Важливо:</strong> серверний режим увімкнений: до захищеного API надсилаються поточне повідомлення та до 12 останніх реплік. Сервер не зберігає історію; локальна пам’ять працює лише після вашої згоди. Не вводьте особисті чи секретні дані.';
+  }
 })();
