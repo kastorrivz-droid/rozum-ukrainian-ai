@@ -8,12 +8,12 @@ placing provider credentials in browser code.
 
 ## Current contract
 
-- \`GET /healthz\` — process liveness;
-- \`GET /readyz\` — provider readiness without secrets;
-- \`POST /v1/chat\` — bounded Ukrainian/Russian dialogue request;
-- deterministic \`mock\` provider remains the default;
+- `GET /healthz` — process liveness;
+- `GET /readyz` — provider readiness without secrets;
+- `POST /v1/chat` — bounded Ukrainian/Russian dialogue request;
+- deterministic `mock` provider remains the default;
 - optional OpenAI Responses adapter, selected explicitly with
-  \`REEVES_PROVIDER=openai\`;
+  `REEVES_PROVIDER=openai`;
 - the OpenAI adapter retrieves at most two relevant public project documents
   from the repository checkout and returns their existing statuses as citations;
 - the provider request includes the current message and at most eight recent,
@@ -29,12 +29,12 @@ bounded to 40 turns, visible to the user and deletable in one action.
 
 From the repository root:
 
-\`\`\`powershell
+```powershell
 $env:PYTHONPATH = 'src'
 $env:REEVES_PROVIDER = 'mock'
 $env:REEVES_ALLOWED_ORIGINS = 'http://127.0.0.1:8000'
 python -m uvicorn reeves_api.app:app --host 127.0.0.1 --port 8787
-\`\`\`
+```
 
 ## Select the OpenAI provider
 
@@ -42,15 +42,15 @@ See [OpenAI provider setup](OPENAI_SETUP.md) for the full enablement sequence.
 
 Configure these values in the backend host's environment settings:
 
-- \`REEVES_PROVIDER=openai\`;
-- \`OPENAI_API_KEY\` as a host-managed secret;
-- \`OPENAI_MODEL\` as a model enabled for the API project;
-- optional \`REEVES_MAX_OUTPUT_TOKENS=500\`;
-- \`REEVES_ALLOWED_ORIGINS=https://kastorrivz-droid.github.io\`.
+- `REEVES_PROVIDER=openai`;
+- `OPENAI_API_KEY` as a host-managed secret;
+- `OPENAI_MODEL` as a model enabled for the API project;
+- optional `REEVES_MAX_OUTPUT_TOKENS=500`;
+- `REEVES_ALLOWED_ORIGINS=https://kastorrivz-droid.github.io`.
 
 The key must never go in GitHub Pages assets, the repository, a screenshot, or a
 browser request. The frontend configuration remains public and secret-free:
-set \`apiEnabled: true\` and the deployed HTTPS \`apiBaseUrl\` only after the
+set `apiEnabled: true` and the deployed HTTPS `apiBaseUrl` only after the
 backend, privacy notice and cost controls are ready.
 
 ## Production boundary
