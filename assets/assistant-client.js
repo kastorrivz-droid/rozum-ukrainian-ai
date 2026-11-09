@@ -60,7 +60,7 @@
         const citation = Array.isArray(payload.citations) ? payload.citations[0] : null;
         const source = citation && citation.url && citation.title
           ? { file: citation.title, url: citation.url, status: citation.status || 'PROPOSED' }
-          : local.source;
+          : null;
 
         return {
           ...local,

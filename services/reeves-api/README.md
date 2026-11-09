@@ -4,38 +4,61 @@
 
 This service is separate from the normative ROZUM_AI_v2.1 receiver. It gives
 the static GitHub Pages assistant a server-side dialogue boundary without
-placing a provider key in browser code.
+placing provider credentials in browser code.
 
 ## Current contract
 
 - `GET /healthz` — process liveness;
 - `GET /readyz` — provider readiness without secrets;
 - `POST /v1/chat` — bounded Ukrainian/Russian dialogue request;
-- deterministic `mock` provider only;
+- deterministic `mock` provider remains the default;
+- optional OpenAI Responses adapter, selected explicitly with
+  `REEVES_PROVIDER=openai`;
+- the OpenAI adapter retrieves at most two relevant public project documents
+  from the repository checkout and returns their existing statuses as citations;
+- the provider request includes the current message and at most eight recent,
+  length-limited turns; it does not write prompt history to this service;
 - Argos guard report is distinct from the Reeves response role;
-- no server-side prompt or history persistence;
 - real request-byte limit, CORS allowlist and single-process rate limit;
 - browser automatically falls back to the local 21-topic engine.
 
-The browser also has a separate opt-in local memory: it is disabled by default,
-bounded to 40 turns, visible to the user and deletable in one action. This is
-not server persistence.
+The browser also has separate opt-in local memory: it is disabled by default,
+bounded to 40 turns, visible to the user and deletable in one action.
 
-## Local run
+## Local mock run
+
+From the repository root:
 
 ```powershell
-$env:REEVES_PROVIDER='mock'
-$env:REEVES_ALLOWED_ORIGINS='http://127.0.0.1:8000'
+$env:PYTHONPATH = 'src'
+$env:REEVES_PROVIDER = 'mock'
+$env:REEVES_ALLOWED_ORIGINS = 'http://127.0.0.1:8000'
 python -m uvicorn reeves_api.app:app --host 127.0.0.1 --port 8787
 ```
 
-Then set `apiEnabled: true` and `apiBaseUrl: 'http://127.0.0.1:8787'` in the
-public, non-secret `assets/assistant-config.js` file used by the local preview.
+## Select the OpenAI provider
+
+See [OpenAI provider setup](OPENAI_SETUP.md) for the full enablement sequence.
+
+Configure these values in the backend host's environment settings:
+
+- `REEVES_PROVIDER=openai`;
+- `OPENAI_API_KEY` as a host-managed secret;
+- `OPENAI_MODEL` as a model enabled for the API project;
+- optional `REEVES_MAX_OUTPUT_TOKENS=500`;
+- `REEVES_ALLOWED_ORIGINS=https://kastorrivz-droid.github.io`.
+
+The key must never go in GitHub Pages assets, the repository, a screenshot, or a
+browser request. The frontend configuration remains public and secret-free:
+set `apiEnabled: true` and the deployed HTTPS `apiBaseUrl` only after the
+backend, privacy notice and cost controls are ready.
 
 ## Production boundary
 
-The in-memory limiter is suitable only for one beta process. Internet-facing
-deployment needs a shared rate limiter, a daily token/cost budget, a circuit
-breaker, secret-manager custody for the provider key, abuse monitoring that
-does not log prompt bodies, and an explicit retention policy. The mock passing
-tests does not validate a paid provider or production deployment.
+The in-memory limiter is suitable only for one beta process. Before public
+model traffic, configure a shared rate/cost limiter, a daily budget cutoff,
+provider-side usage limits, a circuit breaker, abuse monitoring that does not
+log prompt bodies, and an explicit retention policy. The model receives the
+current user message, up to eight recent turns, and selected public project
+excerpts. OpenAI API data handling still applies to those requests. Keep the
+mock/local fallback available when the provider or budget is unavailable.

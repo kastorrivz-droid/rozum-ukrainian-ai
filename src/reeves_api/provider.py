@@ -1,13 +1,13 @@
 """Provider boundary for the Reeves dialogue service.
 
-Only a deterministic mock is enabled in the public prototype. A paid model
-adapter can be added behind this interface without exposing its key to the
-browser or changing the public request contract.
+The deterministic mock remains the default. An optional OpenAI Responses
+adapter runs only on the server and preserves the public request contract.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 from typing import Protocol
 
 from .models import ChatRequest, Citation, ResolvedLanguage
@@ -22,6 +22,10 @@ REPOSITORY_SOURCE = (
 class ProviderReply:
     text: str
     citations: tuple[Citation, ...]
+
+
+class ProviderUnavailable(RuntimeError):
+    """Raised when an external dialogue provider cannot return a valid answer."""
 
 
 class ChatProvider(Protocol):
@@ -43,7 +47,19 @@ def detect_language(request: ChatRequest) -> ResolvedLanguage:
         return "uk"
     if any(letter in lowered for letter in "ыэъё"):
         return "ru"
-    return "uk"
+
+    words = set(re.findall(r"[a-zа-яіїєґ0-9]+", lowered))
+    russian_markers = {
+        "ты", "тебе", "здесь", "можешь", "проверить", "ответь", "скажи",
+        "сейчас", "спасибо", "что", "кто", "как",
+    }
+    ukrainian_markers = {
+        "тобі", "тут", "можеш", "відповідай", "відповісти", "зараз",
+        "дякую", "що", "хто", "як",
+    }
+    russian_score = len(words & russian_markers)
+    ukrainian_score = len(words & ukrainian_markers)
+    return "ru" if russian_score > ukrainian_score else "uk"
 
 
 class MockProvider:
@@ -140,6 +156,10 @@ def load_provider(name: str) -> ChatProvider:
     normalized = name.strip().lower()
     if normalized == "mock":
         return MockProvider()
+    if normalized == "openai":
+        from .openai_provider import OpenAIResponsesProvider
+
+        return OpenAIResponsesProvider.from_environment()
     raise RuntimeError(
         f"Unsupported REEVES_PROVIDER={name!r}; this prototype fails closed."
     )
