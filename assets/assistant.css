@@ -514,3 +514,89 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* 2026-11 widescreen Reeves workspace */
+@media (min-width: 1180px) {
+  .wrap {
+    width: min(1760px, calc(100% - 48px));
+    padding: 18px 0 28px;
+  }
+
+  .topbar {
+    min-height: 70px;
+    padding-inline: clamp(18px, 1.8vw, 30px);
+  }
+
+  main {
+    display: grid;
+    grid-template-columns: minmax(300px, .54fr) minmax(0, 1.66fr);
+    gap: clamp(18px, 1.5vw, 26px);
+    align-items: stretch;
+    margin-top: 22px;
+  }
+
+  .intro {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(30px, 3vw, 52px) clamp(24px, 2.3vw, 40px);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 26px;
+    background:
+      linear-gradient(155deg, rgba(8, 30, 54, .92), rgba(3, 12, 25, .96)),
+      radial-gradient(circle at 20% 12%, rgba(91, 188, 242, .18), transparent 45%);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, .36), inset 0 1px rgba(132, 203, 243, .08);
+  }
+
+  .intro-copy { max-width: none; }
+  .intro h1 { font-size: clamp(48px, 4.25vw, 76px); }
+  .lead {
+    margin-top: 22px;
+    font-size: clamp(15px, 1.15vw, 18px);
+    line-height: 1.62;
+  }
+
+  .trust-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 28px;
+  }
+
+  .assistant-shell {
+    grid-template-columns: minmax(300px, .76fr) minmax(560px, 1.44fr);
+    gap: clamp(18px, 1.35vw, 24px);
+    min-width: 0;
+  }
+
+  .identity-card,
+  .chat-card {
+    height: max(720px, calc(100svh - 138px));
+    min-height: 720px;
+    max-height: 900px;
+  }
+
+  .visual-frame { aspect-ratio: 16 / 10; }
+  .identity-copy { padding: clamp(22px, 1.8vw, 30px); }
+  .identity-copy h2 { font-size: clamp(27px, 2.25vw, 40px); }
+  .principle-card { margin: auto clamp(18px, 1.5vw, 24px) clamp(18px, 1.5vw, 24px); }
+
+  .chat-card { padding: 0 clamp(18px, 1.55vw, 28px) 22px; }
+  .chat-head { min-height: 82px; }
+  .messages {
+    min-height: 310px;
+    max-height: none;
+    padding-top: 26px;
+  }
+
+  footer { grid-column: 1 / -1; }
+}
+
+@media (min-width: 1600px) {
+  main { grid-template-columns: minmax(330px, .5fr) minmax(0, 1.82fr); }
+  .assistant-shell { grid-template-columns: minmax(380px, .78fr) minmax(680px, 1.42fr); }
+  .message { max-width: 82%; }
+}
