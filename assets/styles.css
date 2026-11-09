@@ -41,7 +41,7 @@ body{background:radial-gradient(ellipse at 70% 0%,#163a64 0%,transparent 40%),ra
 .hero-art{isolation:isolate;overflow:hidden}
 .hero-art:before{content:"";position:absolute;z-index:0;inset:-30%;border-radius:50%;background:radial-gradient(circle,#3c9bd636,transparent 57%);pointer-events:none}
 .hero-art .art-image{z-index:1}
-.hero-art .art-image img{aspect-ratio:1200/760;object-fit:cover;object-position:center;filter:drop-shadow(0 12px 33px #0009)}
+.hero-art .art-image img{aspect-ratio:1672/941;object-fit:cover;object-position:68% center;filter:drop-shadow(0 12px 33px #0009)}
 .panorama-frame{position:relative;background:radial-gradient(ellipse at center,#163e6c,#030a18)}
 .panorama-frame>img{height:clamp(220px,42vw,500px);object-position:center 50%;filter:saturate(1.08)}
 .panorama-foot{background:linear-gradient(90deg,#081a30,#050d1d)}
