@@ -15,6 +15,16 @@ Official references:
 - [Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/)
 - [Gemma 4 on Workers AI](https://developers.cloudflare.com/workers-ai/models/gemma-4-26b-a4b-it/)
 
+## Local contract check
+
+From the repository root, run:
+
+```sh
+node --test cloudflare/reeves-worker/test.mjs
+```
+
+These tests mock the Workers AI binding and check the HTTP response contract, language handling, and origin restrictions. They do not call the live model.
+
 ## Deploy from Windows PowerShell
 
 Install Node.js if it is not already installed, then from the repository root run:
