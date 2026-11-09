@@ -1,31 +1,116 @@
 <!doctype html>
-<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#070c18"><meta name="description" content="ROZUM Assistant — безкоштовний демонстраційний довідник українського проєкту ROZUM. Дізнайтеся більше про ролі, протоколи та принципи."/><title>ROZUM Assistant — публічне демо</title><link rel="icon" href="assets/favicon.svg"><style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 80% 10%,#16344a 0,transparent 35%),#070c18;color:#eaf3ff;font:16px system-ui,sans-serif}.wrap{max-width:850px;margin:auto;padding:28px 18px}a{color:#8bdcf3}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.brand{font-size:24px;font-weight:800;letter-spacing:.1em;color:#efc46b}h1{font-size:clamp(28px,5vw,46px);margin-bottom:6px}.muted{color:#aabdd1;line-height:1.6}.panel{border:1px solid #38516e;border-radius:20px;background:#0c172a;box-shadow:0 15px 50px #0005;padding:20px;margin-top:24px}.messages{height:380px;overflow:auto;display:flex;flex-direction:column;gap:14px;padding:8px 0 18px}.bubble{max-width:88%;padding:12px 16px;border-radius:16px;white-space:pre-wrap;line-height:1.55}.bot{background:#172e46;align-self:flex-start}.user{background:#214b54;align-self:flex-end}form{display:flex;gap:8px}input{min-width:0;flex:1;padding:15px;background:#0a1323;color:white;border:1px solid #536b88;border-radius:12px;font:inherit}button{border:0;border-radius:12px;padding:12px 18px;background:#edc36c;color:#182036;font:inherit;font-weight:700;cursor:pointer}button:hover{filter:brightness(1.1)}.chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.chips button{background:#1a3448;color:#d6f3ff;font-size:13px;padding:9px 12px}.note{font-size:13px;color:#b9c8da;line-height:1.6}
-body{background:radial-gradient(ellipse at 65% 10%,#173b65 0%,transparent 48%),radial-gradient(ellipse at 0 70%,#37251766,transparent 38%),#030814}
-.wrap{max-width:1250px;padding:24px 22px 48px}
-.top{padding:13px 18px;border:1px solid #345e85;border-radius:18px;background:#06172cdd;box-shadow:0 14px 35px #0006}
-.brand{display:inline-flex;align-items:center;gap:10px;font-size:27px;letter-spacing:.16em;text-shadow:0 0 18px #f3b85766}
-.brand:before{content:"";width:35px;height:35px;display:inline-block;background:url("assets/favicon.svg") center/contain no-repeat}
-.top a{text-decoration:none;color:#c6e7ff}.top a:hover{color:#f1c47e}
-h1{font-size:clamp(34px,5vw,60px);letter-spacing:.04em;margin:24px 0 8px;text-shadow:0 5px 28px #0009}
-.muted{max-width:740px}
-.panel{position:relative;max-width:850px;margin-left:auto;margin-right:auto;background:linear-gradient(145deg,#08182cf5,#071222fa);border:1px solid #4778a6;box-shadow:0 0 75px #0c8cdb25,0 20px 70px #000a;padding:22px;border-radius:25px;overflow:hidden}
-.panel:before{content:"ROZUM // PUBLIC ASSISTANT";display:block;color:#f0c87c;font-size:12px;font-weight:800;letter-spacing:.18em;border-bottom:1px solid #416b8c;padding-bottom:15px;margin-bottom:12px}
-.messages{height:min(46vh,430px);min-height:300px;scrollbar-color:#3b719b #0a1b30}
-.bubble{border:1px solid #356084;box-shadow:0 7px 25px #0004}
-.bot{background:linear-gradient(135deg,#123154,#10253e);border-color:#3a78a7}
-.user{background:linear-gradient(135deg,#284f60,#173a48);border-color:#55a9bd}
-.chips button{background:linear-gradient(120deg,#0f2c4d,#0a203b);color:#d7efff;border:1px solid #32618b}
-.chips button:hover{border-color:#eec37b}
-input{background:#061426;border:1px solid #416c96;box-shadow:inset 0 0 18px #0005}
-input:focus{outline:2px solid #e9c27e;outline-offset:2px}
-button[type=submit]{background:linear-gradient(120deg,#ffdfa0,#dfa448);box-shadow:0 0 25px #eab45444}
-.note{border-top:1px solid #2b4e70;padding-top:13px}
-.assistant-stage{position:relative;margin:22px auto 0;max-width:1040px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:25px}
-.assistant-stage img{width:100%;border:1px solid #365e83;border-radius:24px;box-shadow:0 0 45px #2074bd36}
-.assistant-stage p{color:#b8d3eb;line-height:1.6}
-.stage-kicker{font-size:12px;color:#edc47b;letter-spacing:.2em;font-weight:800}
-@media(max-width:720px){.assistant-stage{grid-template-columns:1fr}.panel{padding:14px}.top{padding:12px}.brand{font-size:20px}.messages{min-height:260px}.chips button{font-size:12px}}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-</style></head>
-<body><div class="wrap"><div class="top"><span class="brand">◉ ROZUM</span><a href="./">← На головну</a><a href="https://rozum-os-reeves.kastorrivz.chatgpt.site" target="_blank" rel="noopener noreferrer">ROZUM OS ↗</a></div><h1>ROZUM Assistant <span style="color:#edc36c">DEMO</span></h1><p class="muted">Безкоштовна демонстрація основ ROZUM. Основна мова — українська; також підтримуються запитання російською. Це довідник, а не повноцінна генеративна модель.</p><div class="assistant-stage"><div><span class="stage-kicker">ЛЮДИНА × ШТУЧНИЙ ІНТЕЛЕКТ</span><h2 style="font-size:clamp(24px,3vw,38px);margin:12px 0">Майбутнє починається з діалогу.</h2><p>Знайомтеся з ROZUM: спільне мислення, перевірені знання та людина в центрі рішень.</p></div><img src="assets/rozum-dialogue-cinematic.webp" alt="Людина та цифровий Ривз ведуть діалог у синьо-золотому просторі ROZUM" width="1672" height="941"></div><div class="panel"><div id="messages" class="messages" role="log" aria-live="polite"><div class="bubble bot">Вітаю! Я ROZUM Assistant — демонстраційний помічник проєкту. Запитайте про ROZUM OS, Argos, Reeves або Andromeda.</div></div><div class="chips"><button type="button" data-q="Чи ROZUM безкоштовний?">ROZUM безкоштовний?</button><button type="button" data-q="Що таке ROZUM OS?">Що таке ROZUM OS?</button><button type="button" data-q="Кто такой Ривз?">Кто такой Ривз?</button><button type="button" data-q="Що робить Argos?">Що робить Argos?</button><button type="button" data-q="Принципы ROZUM">Принципы ROZUM</button></div><form id="chat"><input id="message" maxlength="1000" required placeholder="Ваше запитання / Ваш вопрос" aria-label="Повідомлення"><button type="submit">Надіслати</button></form><p class="note">Це експериментальний довідник із готовими відповідями, а не генеративний ШІ. Працює без сервера, дані повідомлень не надсилаються й не зберігаються сайтом. Не вводьте особисті або секретні дані.</p></div></div><script src="assets/assistant.js" defer></script></body></html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#030814">
+  <meta name="description" content="ROZUM Assistant — локальний український демо-довідник про ROZUM OS, ролі, принципи та протокол.">
+  <title>ROZUM Assistant — публічне демо</title>
+  <link rel="icon" href="assets/favicon.svg">
+  <link rel="stylesheet" href="assets/assistant.css">
+</head>
+<body>
+  <a class="skip-link" href="#chat-panel">До діалогу</a>
+  <div class="page-glow page-glow-a" aria-hidden="true"></div>
+  <div class="page-glow page-glow-b" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="ROZUM — на головну">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>ROZUM</span>
+      </a>
+      <nav class="topnav" aria-label="Основна навігація">
+        <a href="./">Головна</a>
+        <a href="https://github.com/kastorrivz-droid/rozum-ukrainian-ai" target="_blank" rel="noopener noreferrer">Відкриті матеріали ↗</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <p class="eyebrow">PUBLIC DEMO · UKRAINIAN AI</p>
+          <h1 id="page-title">ROZUM <span>Assistant</span></h1>
+          <p class="lead">Познайомтеся з архітектурою спільного мислення людини та ШІ. Запитуйте українською або російською — відповіді формуються локально з відкритої довідки ROZUM.</p>
+        </div>
+        <div class="trust-row" aria-label="Властивості демо">
+          <span><i aria-hidden="true"></i> Працює у браузері</span>
+          <span><i aria-hidden="true"></i> Не зберігає діалоги</span>
+          <span><i aria-hidden="true"></i> Рішення за людиною</span>
+        </div>
+      </section>
+
+      <section class="assistant-shell" aria-label="ROZUM Assistant">
+        <aside class="identity-card">
+          <div class="visual-frame">
+            <img src="assets/rozum-dialogue-cinematic.webp" alt="Людина та цифровий Ривз ведуть діалог у просторі ROZUM" width="1672" height="941">
+            <span class="visual-label">ЛЮДИНА × ШІ</span>
+          </div>
+          <div class="identity-copy">
+            <p class="role-label">REEVES INTERFACE · PROPOSED</p>
+            <h2>Ясний голос складної системи</h2>
+            <p>Ривз допомагає перетворювати думки на зрозумілу структуру, не підмінюючи фактичну перевірку та рішення людини.</p>
+          </div>
+          <div class="principle-card">
+            <span>Принцип ROZUM</span>
+            <strong>Впевнена відповідь не дорівнює перевіреному факту.</strong>
+          </div>
+        </aside>
+
+        <div class="chat-card" id="chat-panel">
+          <div class="chat-head">
+            <div class="assistant-id">
+              <span class="assistant-avatar" aria-hidden="true">R</span>
+              <span>
+                <strong>ROZUM Assistant</strong>
+                <small><i aria-hidden="true"></i> Локальний довідник</small>
+              </span>
+            </div>
+            <button class="clear-button" id="clear-chat" type="button" aria-label="Очистити діалог">Очистити</button>
+          </div>
+
+          <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions" tabindex="0">
+            <article class="message bot">
+              <span class="message-role">Ривз · довідка</span>
+              <p>Вітаю! Я публічний демо-помічник ROZUM. Можу пояснити архітектуру, ролі, принципи, протокол і межі цього демо.</p>
+            </article>
+          </div>
+
+          <div class="suggestions" aria-label="Запропоновані запитання">
+            <span class="suggestions-label">Швидкий старт</span>
+            <div class="chips">
+              <button type="button" data-q="Що таке ROZUM OS?">Що таке ROZUM OS?</button>
+              <button type="button" data-q="Кто такой Ривз?">Хто такий Ривз?</button>
+              <button type="button" data-q="Як працюють ролі ROZUM?">Ролі системи</button>
+              <button type="button" data-q="Як ROZUM перевіряє факти?">Перевірка фактів</button>
+              <button type="button" data-q="Що вміє це демо?">Межі демо</button>
+            </div>
+          </div>
+
+          <form id="chat" class="composer">
+            <label class="sr-only" for="message">Ваше запитання</label>
+            <div class="input-wrap">
+              <textarea id="message" rows="1" maxlength="600" required placeholder="Запитайте про ROZUM…" aria-describedby="composer-hint"></textarea>
+              <span class="counter" id="counter" aria-hidden="true">0/600</span>
+            </div>
+            <button class="send-button" type="submit">
+              <span>Надіслати</span>
+              <span aria-hidden="true">↑</span>
+            </button>
+          </form>
+          <p class="composer-hint" id="composer-hint">Enter — надіслати · Shift + Enter — новий рядок</p>
+          <p class="privacy-note"><strong>Важливо:</strong> це довідник із підготовленими локальними відповідями, а не підключена генеративна модель. Повідомлення не залишають ваш браузер і не зберігаються сайтом. Не вводьте особисті чи секретні дані.</p>
+          <p class="live-status sr-only" id="live-status" aria-live="polite"></p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>ROZUM · Український проєкт відкритого мислення</span>
+      <a href="./">Повернутися на головну →</a>
+    </footer>
+  </div>
+
+  <script src="assets/assistant.js" defer></script>
+</body>
+</html>
