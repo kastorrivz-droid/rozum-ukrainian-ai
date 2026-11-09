@@ -38,6 +38,8 @@ python -m uvicorn reeves_api.app:app --host 127.0.0.1 --port 8787
 
 ## Select the OpenAI provider
 
+See [OpenAI provider setup](OPENAI_SETUP.md) for the full enablement sequence.
+
 Configure these values in the backend host's environment settings:
 
 - \`REEVES_PROVIDER=openai\`;
