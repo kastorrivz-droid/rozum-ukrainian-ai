@@ -4,14 +4,14 @@
 
 **Public frontend:** GitHub Pages
 
-**Dialogue backend:** separate \`reeves_api\` service
+**Dialogue backend:** separate `reeves_api` service
 
 **Normative receiver:** unchanged ROZUM_AI_v2.1 runtime
 
 ## Implemented in this branch
 
 1. The static design remains the default and works without a server.
-2. The browser calls \`POST /v1/chat\` only when the public, non-secret feature
+2. The browser calls `POST /v1/chat` only when the public, non-secret feature
    flag is enabled. Provider credentials never enter Pages assets.
 3. A failed, timed-out or malformed server response falls back to the local
    21-topic Ukrainian/Russian engine.
@@ -32,7 +32,7 @@
 
 ## Trust boundaries
 
-\`\`\`text
+```text
 Browser / GitHub Pages
   ├─ local knowledge engine (always available)
   ├─ opt-in local history (user can inspect/delete)
@@ -47,7 +47,7 @@ Reeves API
           │
           ▼
 OpenAI Responses API (only when configured; not active on the public site)
-\`\`\`
+```
 
 The v2.1 receiver remains a separate protocol service. The public site mentions
 v2.2, but the repository schema and receiver are still v2.1. This branch does
@@ -70,10 +70,10 @@ versioned, source-attributed material without changing v2.1 signing semantics.
 
 1. Push this feature branch and let repository CI run.
 2. Review the Pages visual and privacy-text changes.
-3. Merge the code while \`apiEnabled\` remains false.
-4. Deploy the mock backend and verify \`/readyz\` from the chosen host.
+3. Merge the code while `apiEnabled` remains false.
+4. Deploy the mock backend and verify `/readyz` from the chosen host.
 5. Add the provider key as a host secret, choose the model, and configure the
    shared rate/cost controls.
 6. Deploy the OpenAI adapter and verify its response and fallback paths.
-7. Enable \`apiBaseUrl\` only after the service and privacy/cost settings are
+7. Enable `apiBaseUrl` only after the service and privacy/cost settings are
    verified.
