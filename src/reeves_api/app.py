@@ -18,7 +18,7 @@ from fastapi.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from .models import ChatRequest, ChatResponse, GuardReport
-from .provider import ChatProvider, detect_language, load_provider
+from .provider import ChatProvider, ProviderUnavailable, detect_language, load_provider
 
 
 DEFAULT_MAX_BODY_BYTES = 64 * 1024
@@ -248,7 +248,17 @@ def create_app(
             )
 
         language = detect_language(payload)
-        generated = await selected_provider.generate(payload, language)
+        try:
+            generated = await selected_provider.generate(payload, language)
+        except ProviderUnavailable:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "code": "PROVIDER_UNAVAILABLE",
+                    "message": "The dialogue provider is temporarily unavailable.",
+                },
+                headers={"Retry-After": "10"},
+            ) from None
         return ChatResponse(
             request_id=str(uuid4()),
             reply=generated.text,
