@@ -7,6 +7,7 @@ adapter runs only on the server and preserves the public request contract.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 from typing import Protocol
 
 from .models import ChatRequest, Citation, ResolvedLanguage
@@ -46,7 +47,19 @@ def detect_language(request: ChatRequest) -> ResolvedLanguage:
         return "uk"
     if any(letter in lowered for letter in "ыэъё"):
         return "ru"
-    return "uk"
+
+    words = set(re.findall(r"[a-zа-яіїєґ0-9]+", lowered))
+    russian_markers = {
+        "ты", "тебе", "здесь", "можешь", "проверить", "ответь", "скажи",
+        "сейчас", "спасибо", "что", "кто", "как",
+    }
+    ukrainian_markers = {
+        "тобі", "тут", "можеш", "відповідай", "відповісти", "зараз",
+        "дякую", "що", "хто", "як",
+    }
+    russian_score = len(words & russian_markers)
+    ukrainian_score = len(words & ukrainian_markers)
+    return "ru" if russian_score > ukrainian_score else "uk"
 
 
 class MockProvider:
