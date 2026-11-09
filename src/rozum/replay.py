@@ -5,6 +5,7 @@ from __future__ import annotations
 import sqlite3
 import threading
 from collections import deque
+from contextlib import closing
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -124,7 +125,7 @@ class SQLiteReplayStore:
         return connection
 
     def _initialize(self) -> None:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection:
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS replay_ids (
@@ -138,7 +139,7 @@ class SQLiteReplayStore:
 
     def check_ready(self) -> bool:
         try:
-            with self._connect() as connection:
+            with closing(self._connect()) as connection:
                 return connection.execute("SELECT 1").fetchone() == (1,)
         except sqlite3.Error:
             return False
@@ -153,7 +154,7 @@ class SQLiteReplayStore:
 
     def get(self, message_id: str, now: datetime) -> ReplayRecord | None:
         now_value = self._iso(now)
-        with self._connect() as connection:
+        with closing(self._connect()) as connection:
             connection.execute("BEGIN IMMEDIATE")
             connection.execute("DELETE FROM replay_ids WHERE expires_at <= ?", (now_value,))
             row = connection.execute(
@@ -183,7 +184,7 @@ class SQLiteReplayStore:
     ) -> bool:
         now_value = self._iso(now)
         expires_at = self._iso(now + ttl)
-        with self._connect() as connection:
+        with closing(self._connect()) as connection:
             try:
                 connection.execute("BEGIN IMMEDIATE")
                 connection.execute(

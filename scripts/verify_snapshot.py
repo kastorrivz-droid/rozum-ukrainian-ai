@@ -10,6 +10,7 @@ from pathlib import Path
 
 EXPECTED_ZIP_SHA256 = "f1db4f9784d282693f7dd506b6b4dd7e07c25930ef9e6cd7a89d4d945b512f24"
 ZIP_NAME = "Rosum-OS-Knowledge-Pack-v2.1-2026-09-02.zip"
+CRLF_NORMALIZED_SUFFIXES = {".b64", ".json", ".md", ".sha256"}
 
 
 def digest(path: Path) -> str:
@@ -18,6 +19,19 @@ def digest(path: Path) -> str:
         for block in iter(lambda: source.read(1024 * 1024), b""):
             hasher.update(block)
     return hasher.hexdigest()
+
+
+def normalized_text_digest(path: Path) -> str:
+    """Hash repository text using the LF bytes recorded in the manifest."""
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def matches_manifest_digest(path: Path, expected: str) -> tuple[bool, bool]:
+    if digest(path) == expected:
+        return True, False
+    if path.suffix.lower() in CRLF_NORMALIZED_SUFFIXES:
+        return normalized_text_digest(path) == expected, True
+    return False, False
 
 
 def parse_manifest(path: Path) -> list[tuple[str, str]]:
@@ -50,8 +64,10 @@ def verify(root: Path) -> list[str]:
         path = safe_path(root, relative_name)
         if not path.is_file():
             failures.append(f"missing: {relative_name}")
-        elif digest(path) != expected:
-            failures.append(f"digest mismatch: {relative_name}")
+        else:
+            matches, _normalized = matches_manifest_digest(path, expected)
+            if not matches:
+                failures.append(f"digest mismatch: {relative_name}")
 
     archive = root / ZIP_NAME
     if not archive.is_file():
@@ -70,8 +86,15 @@ def main() -> int:
         for failure in failures:
             print(f"FAIL {failure}")
         return 1
-    count = len(parse_manifest(args.root / "MANIFEST.sha256"))
-    print(f"PASS manifest_entries={count} zip_sha256={EXPECTED_ZIP_SHA256}")
+    entries = parse_manifest(args.root / "MANIFEST.sha256")
+    normalized_count = sum(
+        matches_manifest_digest(safe_path(args.root, relative_name), expected)[1]
+        for expected, relative_name in entries
+    )
+    print(
+        f"PASS manifest_entries={len(entries)} crlf_normalized={normalized_count} "
+        f"zip_sha256={EXPECTED_ZIP_SHA256}"
+    )
     return 0
 
 

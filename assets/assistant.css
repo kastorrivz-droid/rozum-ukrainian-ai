@@ -288,13 +288,53 @@ h1 span {
 .message-role { display: block; margin-bottom: 5px; color: #77c9f2; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .message.user .message-role { color: #9cd5df; text-align: right; }
 .message p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+.message-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 11px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(110, 170, 211, .18);
+}
+.message-source {
+  max-width: 100%;
+  overflow: hidden;
+  color: #8fc8e8;
+  font-size: 10px;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.message-source:hover { color: #f0cd8d; }
+.source-status {
+  padding: 3px 6px;
+  border: 1px solid rgba(109, 179, 222, .3);
+  border-radius: 999px;
+  color: #82a9c2;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .07em;
+}
+.copy-button {
+  margin-left: auto;
+  padding: 3px 5px;
+  border: 0;
+  background: transparent;
+  color: #6f8ea5;
+  font-size: 9px;
+  cursor: pointer;
+}
+.copy-button:hover { color: #d3e9f6; }
 .message.typing { display: flex; gap: 5px; padding: 16px 18px; }
 .message.typing i { width: 6px; height: 6px; border-radius: 50%; background: #7ccff6; animation: thinking 1s infinite ease-in-out; }
 .message.typing i:nth-child(2) { animation-delay: .14s; }
 .message.typing i:nth-child(3) { animation-delay: .28s; }
 
 .suggestions { padding: 15px 0 14px; border-top: 1px solid var(--line); }
-.suggestions-label { display: block; margin-bottom: 9px; color: #728ea6; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.suggestions-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 9px; }
+.suggestions-label { display: block; color: #728ea6; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.session-state { color: #64829a; font-size: 9px; white-space: nowrap; }
 .chips { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
 .chips::-webkit-scrollbar { display: none; }
 .chips button {
@@ -347,8 +387,49 @@ textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(239, 191,
 .send-button:hover { filter: brightness(1.06); }
 .send-button:disabled, .chips button:disabled { cursor: wait; filter: grayscale(.35); opacity: .58; }
 .composer-hint { margin: 7px 3px 0; color: #5f7c94; font-size: 10px; }
+.memory-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 11px; }
+.memory-toggle { display: inline-flex; align-items: center; gap: 8px; color: #8da8be; font-size: 11px; cursor: pointer; }
+.memory-toggle input { width: 15px; height: 15px; margin: 0; accent-color: var(--gold); }
+.memory-view {
+  padding: 5px 8px;
+  border: 1px solid #315b7d;
+  border-radius: 9px;
+  background: rgba(10, 34, 58, .72);
+  color: #9cc5dc;
+  font-size: 10px;
+  cursor: pointer;
+}
+.memory-view:disabled { cursor: not-allowed; opacity: .42; }
+.memory-view span { display: inline-grid; min-width: 18px; min-height: 18px; margin-left: 4px; place-items: center; border-radius: 50%; background: #163d5c; }
 .privacy-note { margin: 15px 0 0; padding-top: 14px; border-top: 1px solid var(--line); color: #8da5bb; font-size: 11px; line-height: 1.55; }
 .privacy-note strong { color: #bfd5e6; }
+
+.memory-dialog {
+  width: min(680px, calc(100% - 28px));
+  max-height: min(760px, calc(100vh - 32px));
+  padding: 22px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 22px;
+  background: #07182b;
+  color: var(--ink);
+  box-shadow: 0 30px 100px rgba(0, 0, 0, .72);
+}
+.memory-dialog::backdrop { background: rgba(0, 5, 13, .78); backdrop-filter: blur(6px); }
+.memory-dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.memory-dialog-head .role-label { margin-bottom: 7px; }
+.memory-dialog-head h2 { margin: 0; font-size: 24px; }
+.memory-dialog-head button { border: 0; background: transparent; color: #a9c1d3; font-size: 28px; cursor: pointer; }
+.memory-explainer { margin: 13px 0 17px; color: #90a9bd; font-size: 12px; }
+.memory-list { max-height: min(500px, 55vh); padding-right: 5px; overflow-y: auto; }
+.memory-item { margin-bottom: 10px; padding: 12px 14px; border: 1px solid #284f6d; border-radius: 13px; background: #0c243c; }
+.memory-item.user { border-color: #3a6e76; background: #173843; }
+.memory-item strong { display: block; color: #83ccef; font-size: 10px; text-transform: uppercase; }
+.memory-item p { margin: 5px 0 7px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+.memory-item time { color: #6f899f; font-size: 9px; }
+.memory-empty { color: #819bb0; text-align: center; }
+.memory-actions { display: flex; justify-content: flex-end; padding-top: 16px; }
+.memory-actions button { padding: 9px 12px; border: 1px solid #8f4d56; border-radius: 10px; background: rgba(101, 34, 45, .28); color: #f0b3ba; cursor: pointer; }
 
 footer {
   display: flex;
@@ -373,7 +454,7 @@ footer a:hover { color: var(--gold); }
   border: 0 !important;
 }
 
-button:focus-visible, a:focus-visible, textarea:focus-visible, .messages:focus-visible {
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, .messages:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 3px;
 }
@@ -418,10 +499,14 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, .messages:focus-v
   .assistant-avatar { width: 37px; height: 37px; }
   .messages { min-height: 270px; padding-top: 18px; }
   .message { max-width: 94%; font-size: 14px; }
+  .message-source { max-width: 190px; }
+  .suggestions-top { align-items: flex-start; flex-direction: column; gap: 4px; }
   .composer { gap: 7px; }
   .send-button { width: 52px; justify-content: center; padding: 0; }
   .send-button span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
   .composer-hint { display: none; }
+  .memory-controls { align-items: flex-start; flex-direction: column; }
+  .memory-dialog { padding: 17px; }
   footer { flex-direction: column; gap: 8px; padding: 22px 4px 3px; }
 }
 

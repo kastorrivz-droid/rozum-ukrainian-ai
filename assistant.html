@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#030814">
-  <meta name="description" content="ROZUM Assistant — локальний український демо-довідник про ROZUM OS, ролі, принципи та протокол.">
-  <title>ROZUM Assistant — публічне демо</title>
+  <meta name="description" content="ROZUM Assistant — публічна розмовна бета про ROZUM OS із контекстом сеансу, прикладами та відкритими джерелами.">
+  <title>ROZUM Assistant — публічна розмовна бета</title>
   <link rel="icon" href="assets/favicon.svg">
   <link rel="stylesheet" href="assets/assistant.css">
 </head>
@@ -29,13 +29,14 @@
     <main>
       <section class="intro" aria-labelledby="page-title">
         <div class="intro-copy">
-          <p class="eyebrow">PUBLIC DEMO · UKRAINIAN AI</p>
+          <p class="eyebrow">PUBLIC BETA · UKRAINIAN AI</p>
           <h1 id="page-title">ROZUM <span>Assistant</span></h1>
-          <p class="lead">Познайомтеся з архітектурою спільного мислення людини та ШІ. Запитуйте українською або російською — відповіді формуються локально з відкритої довідки ROZUM.</p>
+          <p class="lead">Поговоріть із Ривзом про архітектуру спільного мислення людини та ШІ. Він утримує тему сеансу: запитуйте «детальніше», просіть приклад або порівнюйте ролі.</p>
         </div>
         <div class="trust-row" aria-label="Властивості демо">
-          <span><i aria-hidden="true"></i> Працює у браузері</span>
-          <span><i aria-hidden="true"></i> Не зберігає діалоги</span>
+          <span><i aria-hidden="true"></i> 21 тема відкритої бази</span>
+          <span><i aria-hidden="true"></i> Пам’ятає контекст сеансу</span>
+          <span><i aria-hidden="true"></i> Не надсилає діалоги</span>
           <span><i aria-hidden="true"></i> Рішення за людиною</span>
         </div>
       </section>
@@ -63,7 +64,7 @@
               <span class="assistant-avatar" aria-hidden="true">R</span>
               <span>
                 <strong>ROZUM Assistant</strong>
-                <small><i aria-hidden="true"></i> Локальний довідник</small>
+                <small id="assistant-mode"><i aria-hidden="true"></i> Публічна бета · локальний діалог</small>
               </span>
             </div>
             <button class="clear-button" id="clear-chat" type="button" aria-label="Очистити діалог">Очистити</button>
@@ -71,14 +72,17 @@
 
           <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions" tabindex="0">
             <article class="message bot">
-              <span class="message-role">Ривз · довідка</span>
-              <p>Вітаю! Я публічний демо-помічник ROZUM. Можу пояснити архітектуру, ролі, принципи, протокол і межі цього демо.</p>
+              <span class="message-role">Ривз · публічна бета</span>
+              <p>Вітаю! Я можу вести послідовну розмову про ROZUM українською або російською. Після відповіді напишіть «детальніше», «приклад», «чому це важливо» або попросіть порівняти ролі.</p>
             </article>
           </div>
 
           <div class="suggestions" aria-label="Запропоновані запитання">
-            <span class="suggestions-label">Швидкий старт</span>
-            <div class="chips">
+            <div class="suggestions-top">
+              <span class="suggestions-label">Продовжити розмову</span>
+              <span class="session-state" id="session-state">Контекст сеансу · 0 відповідей</span>
+            </div>
+            <div class="chips" id="chips">
               <button type="button" data-q="Що таке ROZUM OS?">Що таке ROZUM OS?</button>
               <button type="button" data-q="Кто такой Ривз?">Хто такий Ривз?</button>
               <button type="button" data-q="Як працюють ролі ROZUM?">Ролі системи</button>
@@ -99,7 +103,14 @@
             </button>
           </form>
           <p class="composer-hint" id="composer-hint">Enter — надіслати · Shift + Enter — новий рядок</p>
-          <p class="privacy-note"><strong>Важливо:</strong> це довідник із підготовленими локальними відповідями, а не підключена генеративна модель. Повідомлення не залишають ваш браузер і не зберігаються сайтом. Не вводьте особисті чи секретні дані.</p>
+          <div class="memory-controls">
+            <label class="memory-toggle" for="memory-consent">
+              <input id="memory-consent" type="checkbox">
+              <span>Пам’ять на цьому пристрої</span>
+            </label>
+            <button class="memory-view" id="memory-view" type="button">Переглянути історію <span id="memory-count">0</span></button>
+          </div>
+          <p class="privacy-note" id="privacy-note"><strong>Важливо:</strong> це розмовна бета з перевіреною локальною базою. Поки серверний режим вимкнений, повідомлення не залишають браузер. Історія зберігається лише після вашої згоди через перемикач вище. Не вводьте особисті чи секретні дані.</p>
           <p class="live-status sr-only" id="live-status" aria-live="polite"></p>
         </div>
       </section>
@@ -111,6 +122,25 @@
     </footer>
   </div>
 
+  <dialog class="memory-dialog" id="memory-dialog" aria-labelledby="memory-title">
+    <div class="memory-dialog-head">
+      <div>
+        <p class="role-label">LOCAL MEMORY · OPT-IN</p>
+        <h2 id="memory-title">Історія на цьому пристрої</h2>
+      </div>
+      <button id="memory-close" type="button" aria-label="Закрити історію">×</button>
+    </div>
+    <p class="memory-explainer">Ці репліки зберігаються лише у сховищі цього браузера після вашої згоди. Сервер їх не зберігає.</p>
+    <div class="memory-list" id="memory-list"></div>
+    <div class="memory-actions">
+      <button id="memory-delete" type="button">Видалити всю історію</button>
+    </div>
+  </dialog>
+
+  <script src="assets/assistant-config.js" defer></script>
+  <script src="assets/assistant-engine.js" defer></script>
+  <script src="assets/assistant-client.js" defer></script>
+  <script src="assets/assistant-memory.js" defer></script>
   <script src="assets/assistant.js" defer></script>
 </body>
 </html>
