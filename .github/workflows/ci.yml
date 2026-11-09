@@ -76,5 +76,8 @@ jobs:
       - name: Test browser API client and local fallback
         run: node tests/assistant-client.test.cjs
 
+      - name: Test Cloudflare Reeves Worker contract
+        run: node --test cloudflare/reeves-worker/test.mjs
+
       - name: Test opt-in browser memory
         run: node tests/assistant-memory.test.cjs
