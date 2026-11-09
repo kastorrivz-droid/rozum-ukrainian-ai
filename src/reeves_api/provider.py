@@ -1,8 +1,7 @@
 """Provider boundary for the Reeves dialogue service.
 
-Only a deterministic mock is enabled in the public prototype. A paid model
-adapter can be added behind this interface without exposing its key to the
-browser or changing the public request contract.
+The deterministic mock remains the default. An optional OpenAI Responses
+adapter runs only on the server and preserves the public request contract.
 """
 
 from __future__ import annotations
@@ -22,6 +21,10 @@ REPOSITORY_SOURCE = (
 class ProviderReply:
     text: str
     citations: tuple[Citation, ...]
+
+
+class ProviderUnavailable(RuntimeError):
+    """Raised when an external dialogue provider cannot return a valid answer."""
 
 
 class ChatProvider(Protocol):
@@ -140,6 +143,10 @@ def load_provider(name: str) -> ChatProvider:
     normalized = name.strip().lower()
     if normalized == "mock":
         return MockProvider()
+    if normalized == "openai":
+        from .openai_provider import OpenAIResponsesProvider
+
+        return OpenAIResponsesProvider.from_environment()
     raise RuntimeError(
         f"Unsupported REEVES_PROVIDER={name!r}; this prototype fails closed."
     )
