@@ -4,7 +4,7 @@
 
 **Public frontend:** GitHub Pages
 
-**Dialogue backend:** separate `reeves_api` service
+**Dialogue backend:** separate API (Cloudflare Worker or optional `reeves_api` service)
 
 **Normative receiver:** unchanged ROZUM_AI_v2.1 runtime
 
