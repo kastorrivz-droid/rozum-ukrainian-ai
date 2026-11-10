@@ -18,12 +18,20 @@ class ChatTurn(BaseModel):
     content: str = Field(min_length=1, max_length=4_000)
 
 
+class CoreContext(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    route: Literal["project_knowledge", "general_dialogue"]
+    topic_id: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]{0,31}$")
+
+
 class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     message: str = Field(min_length=1, max_length=4_000)
     language: Language = "auto"
     history: list[ChatTurn] = Field(default_factory=list, max_length=12)
+    core_context: CoreContext | None = None
 
 
 class Citation(BaseModel):
@@ -31,7 +39,17 @@ class Citation(BaseModel):
 
     title: str
     url: str
-    status: Literal["PROPOSED", "VALIDATED", "ACCEPTED"]
+    status: Literal[
+        "PROPOSED",
+        "VALIDATED",
+        "ACCEPTED",
+        "ACCEPTED / CONTROL DOCUMENT",
+        "ACCEPTED / WORKING BASELINE",
+        "VALIDATED / STRUCTURAL BASELINE",
+        "NORMATIVE / LOCKED",
+        "NORMATIVE / ACCEPTED",
+        "INTERNAL / CONCEPT / NON-NORMATIVE",
+    ]
 
 
 class GuardReport(BaseModel):

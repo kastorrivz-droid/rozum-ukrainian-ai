@@ -4,8 +4,9 @@
   const engine = globalThis.ROZUMAssistantEngine;
   const clientFactory = globalThis.ROZUMAssistantClient;
   const memoryFactory = globalThis.ROZUMAssistantMemory;
-  if (!engine || !clientFactory || !memoryFactory) return;
-  const client = clientFactory.create({ engine });
+  const coreFactory = globalThis.ROZUMAssistantCore;
+  if (!engine || !clientFactory || !memoryFactory || !coreFactory) return;
+  const client = clientFactory.create({ engine, core: coreFactory });
   const memory = memoryFactory.create();
 
   const messages = document.getElementById('messages');
@@ -35,12 +36,12 @@
 
   const ui = {
     uk: {
-      user: 'Ви', assistant: 'Ривз · публічна бета', searching: 'Шукаю відповідь у відкритій довідці', ready: 'Відповідь готова',
+      user: 'Ви', assistant: 'Ривз · публічна бета', searching: 'Готую контекст ROZUM Core', ready: 'Відповідь готова',
       cleared: 'Діалог очищено', session: turns => `Контекст сеансу · ${turns} ${turns === 1 ? 'відповідь' : 'відповідей'}`,
       source: 'Джерело', copy: 'Копіювати', copied: 'Скопійовано', placeholder: 'Запитайте про ROZUM…'
     },
     ru: {
-      user: 'Вы', assistant: 'Ривз · публичная бета', searching: 'Ищу ответ в открытой справке', ready: 'Ответ готов',
+      user: 'Вы', assistant: 'Ривз · публичная бета', searching: 'Готовлю контекст ROZUM Core', ready: 'Ответ готов',
       cleared: 'Диалог очищен', session: turns => `Контекст сеанса · ${turns} ${turns === 1 ? 'ответ' : 'ответов'}`,
       source: 'Источник', copy: 'Копировать', copied: 'Скопировано', placeholder: 'Спросите о ROZUM…'
     }
@@ -282,7 +283,7 @@
   updateSessionUI('uk');
   updateMemoryUI();
   if (client.isRemoteEnabled) {
-    assistantMode.lastChild.textContent = ' Публічна бета · захищений серверний діалог';
-    privacyNote.innerHTML = '<strong>Важливо:</strong> серверний режим увімкнений: поточне повідомлення та до 12 останніх реплік надсилаються серверу. Якщо для сервера налаштовано мовну модель, він передає їй поточне повідомлення, до 8 останніх реплік і відповідні відкриті матеріали ROZUM. Сервер не зберігає історію; обробка постачальником залежить від його умов. Локальна пам’ять працює лише після вашої згоди. Не вводьте особисті чи секретні дані.';
+    assistantMode.lastChild.textContent = ' Публічна бета · серверний AI-діалог';
+    privacyNote.innerHTML = '<strong>Важливо:</strong> серверний режим увімкнений: поточне повідомлення, до 12 реплік контексту та коротка підказка ROZUM Core (маршрут і ID теми) надсилаються серверу. Якщо налаштована мовна модель, їй передаються поточне повідомлення, до 8 попередніх реплік і максимум два відкриті документи ROZUM. Сервіс не зберігає історію діалогу; обробка постачальником залежить від його умов. Локальна пам’ять зберігається лише після вашої згоди. Не вводьте особисті чи секретні дані.';
   }
 })();
