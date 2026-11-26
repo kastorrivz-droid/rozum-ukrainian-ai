@@ -16,7 +16,7 @@ dependencies = [
   "jsonschema==4.26.0",
   "rfc3339-validator==0.1.4",
   "rfc8785==0.1.4",
-  "uvicorn==0.52.4",
+  "uvicorn==0.54.0",
 ]
 
 [project.optional-dependencies]
