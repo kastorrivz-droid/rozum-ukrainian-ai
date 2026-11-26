@@ -412,7 +412,7 @@ textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(239, 191,
 }
 .web-search-toggle:has(input:checked) { border-color: rgba(239, 191, 105, .72); color: #f0cd8d; }
 .web-search-toggle input { width: 14px; height: 14px; margin: 0; accent-color: var(--gold); }
-.web-search-toggle:has(input:disabled) { cursor: wait; opacity: .58; }
+.web-search-toggle:has(input:disabled) { cursor: not-allowed; opacity: .58; }
 .memory-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 11px; }
 .memory-toggle { display: inline-flex; align-items: center; gap: 8px; color: #8da8be; font-size: 11px; cursor: pointer; }
 .memory-toggle input { width: 15px; height: 15px; margin: 0; accent-color: var(--gold); }

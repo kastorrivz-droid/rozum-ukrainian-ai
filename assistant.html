@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#030814">
   <meta name="description" content="ROZUM Assistant — публічна розмовна бета про ROZUM OS із контекстом сеансу, прикладами та відкритими джерелами.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://rozum-reeves-api.rozum-reeves-worker.workers.dev; form-action 'self'; frame-src 'none'; upgrade-insecure-requests">
   <title>ROZUM Assistant — публічна розмовна бета</title>
   <link rel="icon" href="assets/favicon.svg">
-  <link rel="stylesheet" href="assets/assistant.css?v=20261126-search">
+  <link rel="stylesheet" href="assets/assistant.css?v=20261126-hardening">
 </head>
 <body>
   <a class="skip-link" href="#chat-panel">До діалогу</a>
@@ -37,7 +38,7 @@
           <span><i aria-hidden="true"></i> 21 тема відкритої бази</span>
           <span><i aria-hidden="true"></i> Пам’ятає контекст сеансу</span>
           <span><i aria-hidden="true"></i> Локальна пам’ять за згодою</span>
-          <span><i aria-hidden="true"></i> Веб-пошук за запитом</span>
+          <span><i aria-hidden="true"></i> Веб-пошук після налаштування</span>
           <span><i aria-hidden="true"></i> Рішення за людиною</span>
         </div>
       </section>
@@ -74,7 +75,7 @@
           <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions" tabindex="0">
             <article class="message bot">
               <span class="message-role">Ривз · публічна бета</span>
-              <p>Вітаю! Я можу вести послідовну розмову українською або російською. Для свіжої інформації увімкніть «Пошук в інтернеті» перед запитанням — я покажу зовнішні джерела окремо.</p>
+              <p>Вітаю! Я можу вести послідовну розмову українською або російською. Для свіжої інформації використовуйте веб-пошук, коли його перемикач доступний — зовнішні джерела відображаються окремо.</p>
             </article>
           </div>
 
@@ -108,7 +109,7 @@
             <label class="web-search-toggle" for="web-search">
               <input id="web-search" type="checkbox">
               <span aria-hidden="true">🌐</span>
-              <span>Пошук в інтернеті</span>
+              <span id="web-search-label">Пошук в інтернеті</span>
             </label>
           </div>
           <div class="memory-controls">
@@ -118,7 +119,7 @@
             </label>
             <button class="memory-view" id="memory-view" type="button">Переглянути історію <span id="memory-count">0</span></button>
           </div>
-          <p class="privacy-note" id="privacy-note"><strong>Важливо:</strong> це розмовна бета з перевіреною локальною базою. Поки серверний режим вимкнений, повідомлення не залишають браузер. Історія зберігається лише після вашої згоди через перемикач вище. Не вводьте особисті чи секретні дані.</p>
+          <p class="privacy-note" id="privacy-note"><strong>Важливо:</strong> серверний режим увімкнений. Повідомлення та обмежений контекст надсилаються хмарному сервісу; веб-пошук у поточній конфігурації вимкнений. Локальна історія зберігається тільки за вашою згодою. Не вводьте особисті чи секретні дані. <a href="PRIVACY.md" target="_blank" rel="noopener noreferrer">Деталі приватності ↗</a></p>
           <p class="live-status sr-only" id="live-status" aria-live="polite"></p>
         </div>
       </section>
@@ -126,7 +127,7 @@
 
     <footer>
       <span>ROZUM · Український проєкт відкритого мислення</span>
-      <a href="./">Повернутися на головну →</a>
+      <span><a href="PRIVACY.md" target="_blank" rel="noopener noreferrer">Приватність</a> · <a href="./">Повернутися на головну →</a></span>
     </footer>
   </div>
 
@@ -145,11 +146,11 @@
     </div>
   </dialog>
 
-  <script src="assets/assistant-config.js" defer></script>
-  <script src="assets/assistant-engine.js?v=20261110-core" defer></script>
-  <script src="assets/assistant-core.js?v=20261110-core" defer></script>
-  <script src="assets/assistant-client.js?v=20261126-search" defer></script>
+  <script src="assets/assistant-config.js?v=20261126-hardening" defer></script>
+  <script src="assets/assistant-engine.js?v=20261126-hardening" defer></script>
+  <script src="assets/assistant-core.js?v=20261126-hardening" defer></script>
+  <script src="assets/assistant-client.js?v=20261126-hardening" defer></script>
   <script src="assets/assistant-memory.js" defer></script>
-  <script src="assets/assistant.js?v=20261126-search" defer></script>
+  <script src="assets/assistant.js?v=20261126-hardening" defer></script>
 </body>
 </html>

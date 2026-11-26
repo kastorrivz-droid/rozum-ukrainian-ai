@@ -24,7 +24,7 @@ Official references:
 
 ## Optional web search
 
-The chat exposes a user-controlled **Пошук в інтернеті** switch. When enabled, the Worker calls Cloudflare Web Search through the existing AI binding, using the Ceramic.ai provider and at most five results. No search key is sent to the browser or stored in this repository. Search requires AI Gateway credits or a provider key stored securely in AI Gateway; if billing is not configured or the provider fails, Reeves continues without live results and must say that current information was not verified.
+The chat contains a user-controlled **Пошук в інтернеті** switch, but the public configuration keeps it disabled until search billing is actually configured. Enabling search requires both `assets/assistant-config.js` → `webSearchEnabled: true` and the Worker variable `WEB_SEARCH_ENABLED=true`. The Worker then calls Cloudflare Web Search through the existing AI binding, using the Ceramic.ai provider and at most five results. No search key is sent to the browser or stored in this repository. Search requires AI Gateway credits or a provider key stored securely in AI Gateway; if billing is not configured or the provider fails, Reeves continues without live results and must say that current information was not verified.
 
 Search snippets are treated as untrusted external data, sanitized, bounded, and labeled `EXTERNAL / UNVALIDATED`. They never become accepted ROZUM facts automatically. The Worker does not fetch result URLs, which avoids user-controlled server-side URL requests. A separate best-effort per-isolate limit allows four search requests per minute per IP.
 
@@ -61,7 +61,7 @@ The first command opens Cloudflare authentication. The deploy command prints the
 https://rozum-reeves-api.<your-workers-subdomain>.workers.dev
 ```
 
-This Worker exposes `GET /healthz`, `GET /readyz`, and `POST /v1/chat`. Test the public health route first. For a model request, use the Worker URL with `/v1/chat`, JSON containing `message`, `language`, `history`, and optionally `web_search: true` and `core_context: { route, topic_id }`, plus the `Origin: https://kastorrivz-droid.github.io` header. The browser sends only the bounded route and topic ID; it does not send a protocol signature.
+This Worker exposes `GET /healthz`, `GET /readyz`, and `POST /v1/chat`. `/healthz` reports liveness without calling the model. `/readyz` returns `503 not_ready` when the Workers AI `run` binding is unavailable and otherwise reports the locally visible chat/search capabilities; it does not spend model quota on a probe. For a model request, use the Worker URL with `/v1/chat`, JSON containing `message`, `language`, `history`, and optionally `web_search: true` and `core_context: { route, topic_id }`, plus the `Origin: https://kastorrivz-droid.github.io` header. The browser sends only the bounded route and topic ID; it does not send a protocol signature.
 
 ## Connect the website after deployment
 
@@ -70,13 +70,14 @@ After the Worker is deployed and its URL is known, set `assets/assistant-config.
 ```js
 apiEnabled: true,
 apiBaseUrl: 'https://rozum-reeves-api.<your-workers-subdomain>.workers.dev',
-requestTimeoutMs: 25000
+requestTimeoutMs: 25000,
+webSearchEnabled: false
 ```
 
-Use the actual URL printed by Wrangler. This configuration is public but contains no secret. The existing client falls back to its local knowledge engine if the Worker or model is unavailable.
+Use the actual URL printed by Wrangler. This configuration is public but contains no secret. Keep `webSearchEnabled` false until the matching Worker flag and AI Gateway credits or provider key are ready. The existing client falls back to its local knowledge engine if the Worker or model is unavailable.
 
 ## Data and public-test limits
 
 The Worker does not write conversation history to storage. It sends the current message, up to eight recent turns, the bounded ROZUM Core route/topic hint, and up to two relevant public ROZUM documents to Workers AI. When the user explicitly enables web search, the search query is also processed by Cloudflare AI Gateway and Ceramic.ai, and sanitized result snippets are passed to the model. The website displays this in its privacy notice; provider processing is subject to their terms.
 
-CORS allows the GitHub Pages origin and local development on ports 4173. This is a browser boundary, not authentication: the Worker URL is public. A per-IP in-memory limiter is best-effort per Worker isolate, while Cloudflare's daily free allocation is the hard quota. Keep this as a small beta test and do not put secrets or personal data in chat.
+CORS allows the GitHub Pages origin and local development on ports 4173. This is a browser boundary, not authentication: the Worker URL is public. A per-IP in-memory limiter is best-effort per Worker isolate, while Cloudflare's daily free allocation is the hard quota. External citation URLs must use HTTPS. Keep this as a small beta test and do not put secrets or personal data in chat.

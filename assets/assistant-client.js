@@ -13,7 +13,7 @@
     'NORMATIVE / ACCEPTED',
     'INTERNAL / CONCEPT / NON-NORMATIVE'
   ]);
-  const WEB_SEARCH_STATUSES = new Set(['not_requested', 'success', 'empty', 'unavailable', 'rate_limited']);
+  const WEB_SEARCH_STATUSES = new Set(['not_requested', 'success', 'empty', 'unavailable', 'rate_limited', 'disabled']);
 
   function safeBaseUrl(value) {
     const raw = String(value || '').trim().replace(/\/+$/, '');
@@ -52,7 +52,7 @@
     if (!title || !rawUrl || rawUrl.length > 2048) return null;
     try {
       const url = new URL(rawUrl);
-      if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) return null;
+      if (url.protocol !== 'https:' || url.username || url.password) return null;
       url.hash = '';
       return {
         file: title,
@@ -85,12 +85,13 @@
     const baseUrl = safeBaseUrl(config.apiBaseUrl);
     const fetchImpl = options.fetchImpl || globalThis.fetch;
     const isRemoteEnabled = config.apiEnabled === true && Boolean(baseUrl) && typeof fetchImpl === 'function';
+    const isWebSearchEnabled = isRemoteEnabled && config.webSearchEnabled === true;
     const requestTimeoutMs = Math.max(1000, Math.min(Number(config.requestTimeoutMs) || 12000, 30000));
 
     async function reply(question, session, history = [], requestOptions = {}) {
       const local = engine.reply(question, session);
       const coreContext = core ? core.classify(local) : null;
-      const webSearchRequested = requestOptions.webSearch === true;
+      const webSearchRequested = isWebSearchEnabled && requestOptions.webSearch === true;
       const localResult = {
         ...local,
         core: coreContext,
@@ -162,7 +163,7 @@
       }
     }
 
-    return Object.freeze({ reply, isRemoteEnabled });
+    return Object.freeze({ reply, isRemoteEnabled, isWebSearchEnabled });
   }
 
   const api = { create, safeBaseUrl, cleanCitation, cleanWebCitation, cleanHistory };

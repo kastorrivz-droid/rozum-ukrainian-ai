@@ -9,10 +9,7 @@
       .filter(id => typeof id === 'string' && TOPIC_ID.test(id)));
     function classify(result) {
       const responseId = result && typeof result.id === 'string' ? result.id : '';
-      const stateTopic = result && result.state && typeof result.state.topic === 'string' ? result.state.topic : '';
-      const topicId = topicIds.has(responseId)
-        ? responseId
-        : (responseId === 'fallback' && topicIds.has(stateTopic) ? stateTopic : null);
+      const topicId = topicIds.has(responseId) ? responseId : null;
       const projectAnswer = Boolean(topicId || (result && result.source));
       return Object.freeze({ route: projectAnswer ? 'project_knowledge' : 'general_dialogue', topic_id: topicId });
     }

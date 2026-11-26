@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const engine = require('../assets/assistant-engine.js');
+const coreFactory = require('../assets/assistant-core.js');
 
 function ask(text, session = engine.createSession()) {
   const result = engine.reply(text, session);
@@ -34,6 +35,8 @@ for (const [question, expectedId, expectedLanguage] of standaloneCases) {
 
 assert.equal(engine.detectLanguage('Какая столица Франции?'), 'ru');
 assert.equal(engine.detectLanguage('Яка столиця Франції?'), 'uk');
+assert.equal(engine.detectLanguage('Ривз привет'), 'ru');
+assert.equal(engine.detectLanguage('Рівз привіт'), 'uk');
 console.log('PASS general-question language detection');
 
 let conversation = engine.createSession('ru');
@@ -54,6 +57,18 @@ assert.equal(comparison.mode, 'comparison');
 assert.match(comparison.text, /Ривз|Reeves/);
 assert.match(comparison.text, /Argos/);
 console.log('PASS role comparison');
+
+const roles = ask('Расскажи о ролях ROZUM и Ривзе', engine.createSession('ru'));
+const mantra = ask('Сделай короткую мантру для спокойного сна.', roles.state);
+assert.equal(mantra.id, 'fallback');
+assert.equal(mantra.source, null);
+assert.deepEqual(coreFactory.create({ engine }).classify(mantra), {
+  route: 'general_dialogue',
+  topic_id: null
+});
+const projectWellbeing = ask('Как ROZUM учитывает усталость человека?', engine.createSession('ru'));
+assert.equal(projectWellbeing.id, 'wellbeing');
+console.log('PASS general wellbeing request does not inherit project citations');
 
 const sourceTopic = ask('Что такое протокол?', engine.createSession('ru'));
 const source = ask('Какой источник?', sourceTopic.state);

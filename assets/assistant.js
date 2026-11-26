@@ -20,6 +20,7 @@
   const assistantMode = document.getElementById('assistant-mode');
   const privacyNote = document.getElementById('privacy-note');
   const webSearch = document.getElementById('web-search');
+  const webSearchLabel = document.getElementById('web-search-label');
   const memoryConsent = document.getElementById('memory-consent');
   const memoryView = document.getElementById('memory-view');
   const memoryCount = document.getElementById('memory-count');
@@ -39,12 +40,12 @@
     uk: {
       user: 'Ви', assistant: 'Ривз · публічна бета', searching: 'Готую контекст ROZUM Core', webSearching: 'Шукаю актуальні джерела в інтернеті', ready: 'Відповідь готова',
       cleared: 'Діалог очищено', session: turns => `Контекст сеансу · ${turns} ${turns === 1 ? 'відповідь' : 'відповідей'}`,
-      source: 'Джерело', webSource: 'Мережа', searchUnavailable: 'Веб-пошук недоступний', searchLimited: 'Ліміт веб-пошуку', copy: 'Копіювати', copied: 'Скопійовано', placeholder: 'Поставте запитання…'
+      source: 'Джерело', webSource: 'Мережа', searchUnavailable: 'Веб-пошук недоступний', searchDisabled: 'Веб-пошук тимчасово вимкнений', searchLimited: 'Ліміт веб-пошуку', copy: 'Копіювати', copied: 'Скопійовано', placeholder: 'Поставте запитання…'
     },
     ru: {
       user: 'Вы', assistant: 'Ривз · публичная бета', searching: 'Готовлю контекст ROZUM Core', webSearching: 'Ищу актуальные источники в интернете', ready: 'Ответ готов',
       cleared: 'Диалог очищен', session: turns => `Контекст сеанса · ${turns} ${turns === 1 ? 'ответ' : 'ответов'}`,
-      source: 'Источник', webSource: 'Сеть', searchUnavailable: 'Веб-поиск недоступен', searchLimited: 'Лимит веб-поиска', copy: 'Копировать', copied: 'Скопировано', placeholder: 'Задайте вопрос…'
+      source: 'Источник', webSource: 'Сеть', searchUnavailable: 'Веб-поиск недоступен', searchDisabled: 'Веб-поиск временно отключён', searchLimited: 'Лимит веб-поиска', copy: 'Копировать', copied: 'Скопировано', placeholder: 'Задайте вопрос…'
     }
   };
 
@@ -101,12 +102,14 @@
       });
       footer.append(sourceList);
     }
-    if (['unavailable', 'empty', 'rate_limited'].includes(result.webSearchStatus)) {
+    if (['unavailable', 'empty', 'rate_limited', 'disabled'].includes(result.webSearchStatus)) {
       const searchState = document.createElement('span');
       searchState.className = 'search-state';
       searchState.textContent = result.webSearchStatus === 'rate_limited'
         ? ui[result.language].searchLimited
-        : ui[result.language].searchUnavailable;
+        : result.webSearchStatus === 'disabled'
+          ? ui[result.language].searchDisabled
+          : ui[result.language].searchUnavailable;
       footer.append(searchState);
     }
 
@@ -141,7 +144,7 @@
 
   function setBusy(isBusy) {
     sendButton.disabled = isBusy;
-    webSearch.disabled = isBusy;
+    webSearch.disabled = isBusy || !client.isWebSearchEnabled;
     [...chipsBox.querySelectorAll('button')].forEach(chip => { chip.disabled = isBusy; });
     messages.setAttribute('aria-busy', String(isBusy));
   }
@@ -167,6 +170,7 @@
   function updateSessionUI(language) {
     sessionState.textContent = ui[language].session(session.turns);
     input.placeholder = ui[language].placeholder;
+    if (!client.isWebSearchEnabled) webSearchLabel.textContent = ui[language].searchDisabled;
   }
 
   function updateMemoryUI() {
@@ -213,7 +217,7 @@
     setBusy(true);
     isPending = true;
     const token = ++requestToken;
-    const useWebSearch = webSearch.checked;
+    const useWebSearch = client.isWebSearchEnabled && webSearch.checked;
     const typing = addTyping(language, useWebSearch);
     liveStatus.textContent = useWebSearch ? ui[language].webSearching : ui[language].searching;
 
@@ -305,8 +309,17 @@
   resizeInput();
   updateSessionUI('uk');
   updateMemoryUI();
+  if (!client.isWebSearchEnabled) {
+    webSearch.checked = false;
+    webSearch.disabled = true;
+    webSearchLabel.textContent = ui.uk.searchDisabled;
+    webSearch.closest('.web-search-toggle').title = 'Потрібне налаштування ключа або кредитів пошукового провайдера';
+  }
   if (client.isRemoteEnabled) {
     assistantMode.lastChild.textContent = ' Публічна бета · серверний AI-діалог';
-    privacyNote.innerHTML = '<strong>Важливо:</strong> серверний режим увімкнений: поточне повідомлення, до 12 реплік контексту та коротка підказка ROZUM Core надсилаються серверу. Якщо ви вмикаєте веб-пошук, текст запитання також обробляє зовнішній пошуковий провайдер, а знайдені фрагменти передаються моделі як неперевірені джерела. Сервіс не зберігає історію діалогу; локальна пам’ять працює лише після вашої згоди. Не вводьте особисті чи секретні дані.';
+    const searchPrivacy = client.isWebSearchEnabled
+      ? 'Якщо ви вмикаєте веб-пошук, текст запитання також обробляє зовнішній пошуковий провайдер, а знайдені фрагменти передаються моделі як неперевірені джерела.'
+      : 'Веб-пошук тимчасово вимкнений і запитання не передаються пошуковому провайдеру.';
+    privacyNote.innerHTML = `<strong>Важливо:</strong> серверний режим увімкнений: поточне повідомлення, до 12 реплік контексту та коротка підказка ROZUM Core надсилаються серверу. ${searchPrivacy} Код сервісу не записує історію діалогу; локальна пам’ять працює лише після вашої згоди. Не вводьте особисті чи секретні дані. <a href="PRIVACY.md" target="_blank" rel="noopener noreferrer">Деталі приватності ↗</a>`;
   }
 })();

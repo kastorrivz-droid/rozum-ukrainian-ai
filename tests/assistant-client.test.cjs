@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const engine = require('../assets/assistant-engine.js');
+const coreFactory = require('../assets/assistant-core.js');
 const clientModule = require('../assets/assistant-client.js');
 
 (async () => {
@@ -43,6 +44,7 @@ const clientModule = require('../assets/assistant-client.js');
     kind: 'web'
   });
   assert.equal(clientModule.cleanWebCitation({ title: 'Unsafe', url: 'javascript:alert(1)' }), null);
+  assert.equal(clientModule.cleanWebCitation({ title: 'Plain HTTP', url: 'http://example.com/' }), null);
   assert.equal(clientModule.cleanWebCitation({ title: 'Credentials', url: 'https://user:secret@example.com/' }), null);
   console.log('PASS external web citations are sanitized and explicitly unvalidated');
 
@@ -59,7 +61,7 @@ const clientModule = require('../assets/assistant-client.js');
   let captured;
   const remoteClient = clientModule.create({
     engine,
-    config: { apiEnabled: true, apiBaseUrl: 'https://api.example.com/', requestTimeoutMs: 5000 },
+    config: { apiEnabled: true, apiBaseUrl: 'https://api.example.com/', requestTimeoutMs: 5000, webSearchEnabled: true },
     fetchImpl: async (url, options) => {
       captured = { url, options };
       return {
@@ -104,7 +106,49 @@ const clientModule = require('../assets/assistant-client.js');
   assert.equal(remote.sources[1].kind, 'web');
   assert.equal(remote.webSearchStatus, 'success');
   assert.equal(remote.provider, 'mock');
+  assert.equal(remoteClient.isWebSearchEnabled, true);
   console.log('PASS remote contract mapping');
+
+  let generalDialogueBody;
+  const generalDialogueClient = clientModule.create({
+    engine,
+    core: coreFactory,
+    config: { apiEnabled: true, apiBaseUrl: 'https://api.example.com' },
+    fetchImpl: async (_url, options) => {
+      generalDialogueBody = JSON.parse(options.body);
+      return {
+        ok: true,
+        async json() {
+          return { reply: 'Я отпускаю этот день и спокойно засыпаю.', language: 'ru', provider: 'mock' };
+        }
+      };
+    }
+  });
+  const rolesSession = engine.reply('Расскажи о ролях ROZUM и Ривзе', engine.createSession('ru')).state;
+  await generalDialogueClient.reply('Сделай короткую мантру для спокойного сна.', rolesSession, [
+    { role: 'user', content: 'Расскажи о ролях ROZUM и Ривзе' }
+  ]);
+  assert.deepEqual(generalDialogueBody.core_context, { route: 'general_dialogue', topic_id: null });
+  console.log('PASS general dialogue does not inherit a prior project route');
+
+  let disabledSearchBody;
+  const disabledSearchClient = clientModule.create({
+    engine,
+    config: { apiEnabled: true, apiBaseUrl: 'https://api.example.com', webSearchEnabled: false },
+    fetchImpl: async (_url, options) => {
+      disabledSearchBody = JSON.parse(options.body);
+      return {
+        ok: true,
+        async json() {
+          return { reply: 'Поиск отключён, обычный диалог работает.', language: 'ru', provider: 'mock' };
+        }
+      };
+    }
+  });
+  await disabledSearchClient.reply('Проверь новости', engine.createSession('ru'), [], { webSearch: true });
+  assert.equal(disabledSearchClient.isWebSearchEnabled, false);
+  assert.equal(Object.hasOwn(disabledSearchBody, 'web_search'), false);
+  console.log('PASS disabled web search is not sent to the backend');
 
   const fallbackClient = clientModule.create({
     engine,

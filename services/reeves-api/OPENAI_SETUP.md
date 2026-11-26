@@ -1,13 +1,15 @@
 # Enable the Reeves OpenAI provider
 
-This adds a server-side model provider to the ROZUM Assistant. It does not attach
+This document describes an optional OpenAI-backed alternative to the currently
+deployed Cloudflare Workers AI backend. It does not attach
 the current ChatGPT conversation or transfer its personal memories. Reeves runs
 as a separate API application and receives only the request history and public
 ROZUM excerpts described below.
 
-The repository default remains `REEVES_PROVIDER=mock`; the public Pages setting
-also remains `apiEnabled: false`. This branch therefore does not turn on model
-traffic by itself.
+The optional Python service defaults to `REEVES_PROVIDER=mock`. The public Pages
+site currently has `apiEnabled: true` for the separate Cloudflare Worker. Do not
+point it at this Python service until this service has been deployed and its
+limits, privacy controls and readiness have been reviewed.
 
 ## Backend environment
 
@@ -61,6 +63,6 @@ Never put `OPENAI_API_KEY` in that file. If the backend is unavailable, the
 browser returns to the local knowledge engine.
 
 The current limiter is in-memory and per-process. It is suitable for a single
-beta instance, not a public service with an unbounded model budget. Keep
-`apiEnabled` false until a shared rate/cost control and a reviewed usage budget
-are in place.
+beta instance, not a public service with an unbounded model budget. Do not
+switch the public `apiBaseUrl` to this optional service until a shared rate/cost
+control and a reviewed usage budget are in place.

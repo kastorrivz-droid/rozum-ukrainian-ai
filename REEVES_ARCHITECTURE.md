@@ -34,8 +34,8 @@
    optional Python service also keeps provider credentials server-side and
    rejects chat requests from missing or unapproved browser origins.
 9. The Worker retrieves at most two status-attributed public ROZUM documents.
-   The public Pages configuration remains disabled until a backend is deployed
-   and the privacy and usage limits are reviewed.
+   The public Pages configuration is enabled and points to the deployed
+   Cloudflare Worker. The local knowledge engine remains the automatic fallback.
 10. The browser accepts citation links only from the public ROZUM repository and
     rejects malformed or oversized model replies before rendering them.
 
@@ -55,7 +55,7 @@ Dialogue API (Cloudflare Worker or optional Python service)
   └─ no prompt-history persistence in the service
           │
           ▼
-Configured model provider (not active on the public site)
+Configured model provider (active public beta)
 ```
 
 The normative v2.1 receiver remains a separate protocol service. The site-level
@@ -64,7 +64,53 @@ backend. It does not create a packet, sign a message, or claim that ordinary cha
 passed the v2.1 receiver's five-stage validation. The public beta may discuss
 proposed v2.2 ideas, but the repository schema and receiver remain v2.1.
 
-## Required before public model traffic
+## Remaining limits before a wider public launch
+
+- replace the per-isolate limiter with a shared rate/cost store;
+- configure and verify an account-level daily budget cutoff and circuit breaker;
+- review Cloudflare AI Gateway and third-party search logging before enabling
+  web search by default;
+- complete the legal/license review and publish a stable contact path;
+- run sustained load, abuse and prompt-injection tests in Ukrainian and Russian;
+- preserve the mock/local fallback when the provider is unavailable.
+
+Current beta controls already in place:
+
+- the Workers AI binding keeps provider credentials out of Pages assets;
+- each model response is capped at 500 completion tokens;
+- web search code is opt-in and separately rate-limited, while the public
+  `webSearchEnabled` / `WEB_SEARCH_ENABLED` flags remain false until AI Gateway
+  credits or a provider key are configured;
+- the Worker requests `store: false` and does not write prompt history to
+  application storage;
+- `/healthz` reports process liveness, while `/readyz` fails closed when the
+  Workers AI binding is unavailable.
+
+The current in-memory limiter and Cloudflare free daily allocation reduce casual
+cost exposure but are not a globally shared budget or authentication mechanism.
+
+## Deployment history and next release
+
+Completed for the current beta:
+
+- the Cloudflare Worker is deployed;
+- `assets/assistant-config.js` enables its HTTPS URL;
+- live `/healthz`, `/readyz`, CORS and bilingual fallback behavior were checked;
+- the privacy notice identifies remote model processing and the currently
+  disabled external search path.
+
+For the next release:
+
+- run the complete local regression and dependency audit;
+- review the diff and privacy wording;
+- deploy the Worker before the Pages client if the API contract changed;
+- verify live health, readiness, CORS, fallback and both languages after deploy;
+- roll back to the previous Worker/Pages revision if any check fails.
+
+## Historical pre-deployment checklist
+
+The following items were the original prototype gate and are retained as
+history, not as a statement of current deployment state:
 
 - choose the model and set a reviewed usage budget;
 - store the provider key in the backend host's secret manager;
@@ -75,12 +121,3 @@ proposed v2.2 ideas, but the repository schema and receiver remain v2.1.
 - review the privacy notice and evaluate prompt injection and citations in
   Ukrainian and Russian;
 - keep the mock/local fallback available when the provider is unavailable.
-
-## Release sequence
-
-1. Review the Pages visual, local fallback and privacy-text changes.
-2. Merge the code while `apiEnabled` remains false.
-3. Deploy the Cloudflare Worker on the Free plan and verify `/healthz`, `/readyz`,
-   CORS and fallback behavior; confirm the free quota and best-effort limiter.
-4. Enable `apiBaseUrl` only after the deployed URL, privacy notice and usage
-   limits have been reviewed. Keep provider keys out of Pages assets.
