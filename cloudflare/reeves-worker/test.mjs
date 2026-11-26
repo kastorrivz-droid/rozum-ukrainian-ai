@@ -9,6 +9,7 @@ test("health route reports the configured model without requiring chat input", a
   const body = await response.json();
   assert.equal(response.status, 200);
   assert.equal(body.model, "@cf/google/gemma-4-26b-a4b-it");
+  assert.equal(body.capabilities.web_search, "configured");
 });
 
 test("chat preserves the public browser API response contract", async () => {
@@ -92,6 +93,81 @@ test("general questions use the model without invented ROZUM citations", async (
     assert.equal(payload.core.route, "general_dialogue");
     assert.deepEqual(payload.core.sources_used, []);
   }
+});
+
+test("requested web search is grounded, sanitized, and returned as external citations", async () => {
+  let observedSearch;
+  let observedMessages;
+  const env = {
+    AI: {
+      websearch: async (input) => {
+        observedSearch = input;
+        return Response.json({
+          items: [
+            {
+              title: "Cloudflare Web Search API",
+              url: "https://developers.cloudflare.com/web-search/#overview",
+              description: "Current documentation for grounded web search."
+            },
+            {
+              title: "Unsafe result",
+              url: "javascript:alert(1)",
+              description: "This must not reach the model or browser."
+            }
+          ]
+        });
+      },
+      run: async (_model, input) => {
+        observedMessages = input.messages;
+        return { response: "Cloudflare має Web Search API [1]." };
+      }
+    }
+  };
+  const response = await worker.fetch(new Request("https://worker.test/v1/chat", {
+    method: "POST",
+    headers: { Origin: origin, "Content-Type": "application/json", "CF-Connecting-IP": "198.51.100.25" },
+    body: JSON.stringify({ message: "Що нового у Cloudflare Web Search?", language: "uk", web_search: true })
+  }), env);
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(observedSearch, {
+    gatewayId: "default",
+    query: "Що нового у Cloudflare Web Search?",
+    provider: "ceramic",
+    limit: 5
+  });
+  assert.match(observedMessages[0].content, /external sources, not validated ROZUM facts/i);
+  assert.match(observedMessages.at(-1).content, /Cloudflare Web Search API/);
+  assert.doesNotMatch(observedMessages.at(-1).content, /javascript:alert/);
+  assert.equal(body.web_search.status, "success");
+  assert.equal(body.web_search.result_count, 1);
+  assert.equal(body.web_citations.length, 1);
+  assert.equal(body.web_citations[0].status, "EXTERNAL / UNVALIDATED");
+});
+
+test("search provider failure does not fabricate live results", async () => {
+  let observedSystem = "";
+  const env = {
+    AI: {
+      websearch: async () => new Response("credits required", { status: 402 }),
+      run: async (_model, input) => {
+        observedSystem = input.messages[0].content;
+        return { response: "Живий пошук зараз недоступний." };
+      }
+    }
+  };
+  const response = await worker.fetch(new Request("https://worker.test/v1/chat", {
+    method: "POST",
+    headers: { Origin: origin, "Content-Type": "application/json", "CF-Connecting-IP": "198.51.100.26" },
+    body: JSON.stringify({ message: "Які новини сьогодні?", language: "uk", web_search: true })
+  }), env);
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.web_search.status, "unavailable");
+  assert.deepEqual(body.web_citations, []);
+  assert.match(observedSystem, /do not pretend current information was verified/i);
 });
 
 test("chat rejects origins outside the allowlist", async () => {

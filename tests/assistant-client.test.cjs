@@ -31,6 +31,21 @@ const clientModule = require('../assets/assistant-client.js');
   }), null);
   console.log('PASS citations are restricted to the public ROZUM repository');
 
+  assert.deepEqual(clientModule.cleanWebCitation({
+    title: 'Cloudflare Web Search API',
+    url: 'https://developers.cloudflare.com/web-search/#overview',
+    status: 'anything supplied by the network'
+  }), {
+    file: 'Cloudflare Web Search API',
+    title: 'Cloudflare Web Search API',
+    url: 'https://developers.cloudflare.com/web-search/',
+    status: 'EXTERNAL / UNVALIDATED',
+    kind: 'web'
+  });
+  assert.equal(clientModule.cleanWebCitation({ title: 'Unsafe', url: 'javascript:alert(1)' }), null);
+  assert.equal(clientModule.cleanWebCitation({ title: 'Credentials', url: 'https://user:secret@example.com/' }), null);
+  console.log('PASS external web citations are sanitized and explicitly unvalidated');
+
   const localClient = clientModule.create({
     engine,
     config: { apiEnabled: false, apiBaseUrl: 'https://api.example.com' }
@@ -60,7 +75,13 @@ const clientModule = require('../assets/assistant-client.js');
               title: '06_REEVES.md',
               url: 'https://github.com/kastorrivz-droid/rozum-ukrainian-ai/blob/main/06_REEVES.md',
               status: 'PROPOSED'
-            }]
+            }],
+            web_citations: [{
+              title: 'Current external source',
+              url: 'https://example.com/current#section',
+              status: 'EXTERNAL / UNVALIDATED'
+            }],
+            web_search: { requested: true, status: 'success', result_count: 1 }
           };
         }
       };
@@ -69,14 +90,19 @@ const clientModule = require('../assets/assistant-client.js');
   const remote = await remoteClient.reply(
     'Кто такой Ривз?',
     engine.createSession('ru'),
-    [{ role: 'user', content: 'Предыдущий вопрос' }]
+    [{ role: 'user', content: 'Предыдущий вопрос' }],
+    { webSearch: true }
   );
   assert.equal(captured.url, 'https://api.example.com/v1/chat');
   assert.equal(captured.options.credentials, 'omit');
   assert.equal(JSON.parse(captured.options.body).history.length, 1);
+  assert.equal(JSON.parse(captured.options.body).web_search, true);
   assert.equal(remote.transport, 'remote');
   assert.equal(remote.text, 'Серверный ответ Ривза.');
   assert.equal(remote.source.file, '06_REEVES.md');
+  assert.equal(remote.sources.length, 2);
+  assert.equal(remote.sources[1].kind, 'web');
+  assert.equal(remote.webSearchStatus, 'success');
   assert.equal(remote.provider, 'mock');
   console.log('PASS remote contract mapping');
 

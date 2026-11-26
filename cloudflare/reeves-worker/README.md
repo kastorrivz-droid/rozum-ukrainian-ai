@@ -1,6 +1,6 @@
 # ROZUM Assistant: free model test
 
-This directory contains a separate Cloudflare Worker API for the existing GitHub Pages chat. It does not switch the live site into remote mode; the site keeps using its local knowledge engine until its public configuration is deliberately updated.
+This directory contains the Cloudflare Worker API used by the GitHub Pages chat. The browser configuration points to the deployed Worker and keeps the local knowledge engine as a fallback.
 
 ## ROZUM Core dialogue bridge
 
@@ -22,6 +22,17 @@ Official references:
 - [Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/)
 - [Gemma 4 on Workers AI](https://developers.cloudflare.com/workers-ai/models/gemma-4-26b-a4b-it/)
 
+## Optional web search
+
+The chat exposes a user-controlled **Пошук в інтернеті** switch. When enabled, the Worker calls Cloudflare Web Search through the existing AI binding, using the Ceramic.ai provider and at most five results. No search key is sent to the browser or stored in this repository. Search requires AI Gateway credits or a provider key stored securely in AI Gateway; if billing is not configured or the provider fails, Reeves continues without live results and must say that current information was not verified.
+
+Search snippets are treated as untrusted external data, sanitized, bounded, and labeled `EXTERNAL / UNVALIDATED`. They never become accepted ROZUM facts automatically. The Worker does not fetch result URLs, which avoids user-controlled server-side URL requests. A separate best-effort per-isolate limit allows four search requests per minute per IP.
+
+Official references:
+- [Cloudflare Web Search API](https://developers.cloudflare.com/web-search/)
+- [Workers binding and response contract](https://developers.cloudflare.com/web-search/how-to-use/)
+- [Search providers and pricing](https://developers.cloudflare.com/web-search/providers/)
+
 ## Local contract check
 
 From the repository root, run:
@@ -30,7 +41,7 @@ From the repository root, run:
 node --test cloudflare/reeves-worker/test.mjs
 ```
 
-These tests mock the Workers AI binding and check the HTTP response contract, language handling, and origin restrictions. They do not call the live model.
+These tests mock the Workers AI and Web Search bindings and check the HTTP response contract, source sanitization, language handling, and origin restrictions. They do not call live providers.
 
 The AI binding is marked `remote: true`, so `wrangler dev` uses the real account binding while the HTTP Worker still runs locally. Live model tests consume the account's Workers AI allocation.
 
@@ -50,7 +61,7 @@ The first command opens Cloudflare authentication. The deploy command prints the
 https://rozum-reeves-api.<your-workers-subdomain>.workers.dev
 ```
 
-This Worker exposes `GET /healthz`, `GET /readyz`, and `POST /v1/chat`. Test the public health route first. For a model request, use the Worker URL with `/v1/chat`, JSON containing `message`, `language`, `history`, and optionally `core_context: { route, topic_id }`, and the `Origin: https://kastorrivz-droid.github.io` header. The browser sends only the bounded route and topic ID; it does not send a protocol signature.
+This Worker exposes `GET /healthz`, `GET /readyz`, and `POST /v1/chat`. Test the public health route first. For a model request, use the Worker URL with `/v1/chat`, JSON containing `message`, `language`, `history`, and optionally `web_search: true` and `core_context: { route, topic_id }`, plus the `Origin: https://kastorrivz-droid.github.io` header. The browser sends only the bounded route and topic ID; it does not send a protocol signature.
 
 ## Connect the website after deployment
 
@@ -66,6 +77,6 @@ Use the actual URL printed by Wrangler. This configuration is public but contain
 
 ## Data and public-test limits
 
-The Worker does not write conversation history to storage. It sends the current message, up to eight recent turns, the bounded ROZUM Core route/topic hint, and up to two relevant public ROZUM documents to Workers AI. The website displays a notice when remote mode is enabled; provider processing is subject to Cloudflare's terms.
+The Worker does not write conversation history to storage. It sends the current message, up to eight recent turns, the bounded ROZUM Core route/topic hint, and up to two relevant public ROZUM documents to Workers AI. When the user explicitly enables web search, the search query is also processed by Cloudflare AI Gateway and Ceramic.ai, and sanitized result snippets are passed to the model. The website displays this in its privacy notice; provider processing is subject to their terms.
 
 CORS allows the GitHub Pages origin and local development on ports 4173. This is a browser boundary, not authentication: the Worker URL is public. A per-IP in-memory limiter is best-effort per Worker isolate, while Cloudflare's daily free allocation is the hard quota. Keep this as a small beta test and do not put secrets or personal data in chat.

@@ -19,6 +19,7 @@
   const chipsBox = document.getElementById('chips');
   const assistantMode = document.getElementById('assistant-mode');
   const privacyNote = document.getElementById('privacy-note');
+  const webSearch = document.getElementById('web-search');
   const memoryConsent = document.getElementById('memory-consent');
   const memoryView = document.getElementById('memory-view');
   const memoryCount = document.getElementById('memory-count');
@@ -36,14 +37,14 @@
 
   const ui = {
     uk: {
-      user: 'Ви', assistant: 'Ривз · публічна бета', searching: 'Готую контекст ROZUM Core', ready: 'Відповідь готова',
+      user: 'Ви', assistant: 'Ривз · публічна бета', searching: 'Готую контекст ROZUM Core', webSearching: 'Шукаю актуальні джерела в інтернеті', ready: 'Відповідь готова',
       cleared: 'Діалог очищено', session: turns => `Контекст сеансу · ${turns} ${turns === 1 ? 'відповідь' : 'відповідей'}`,
-      source: 'Джерело', copy: 'Копіювати', copied: 'Скопійовано', placeholder: 'Запитайте про ROZUM…'
+      source: 'Джерело', webSource: 'Мережа', searchUnavailable: 'Веб-пошук недоступний', searchLimited: 'Ліміт веб-пошуку', copy: 'Копіювати', copied: 'Скопійовано', placeholder: 'Поставте запитання…'
     },
     ru: {
-      user: 'Вы', assistant: 'Ривз · публичная бета', searching: 'Готовлю контекст ROZUM Core', ready: 'Ответ готов',
+      user: 'Вы', assistant: 'Ривз · публичная бета', searching: 'Готовлю контекст ROZUM Core', webSearching: 'Ищу актуальные источники в интернете', ready: 'Ответ готов',
       cleared: 'Диалог очищен', session: turns => `Контекст сеанса · ${turns} ${turns === 1 ? 'ответ' : 'ответов'}`,
-      source: 'Источник', copy: 'Копировать', copied: 'Скопировано', placeholder: 'Спросите о ROZUM…'
+      source: 'Источник', webSource: 'Сеть', searchUnavailable: 'Веб-поиск недоступен', searchLimited: 'Лимит веб-поиска', copy: 'Копировать', copied: 'Скопировано', placeholder: 'Задайте вопрос…'
     }
   };
 
@@ -76,17 +77,37 @@
 
     const footer = document.createElement('div');
     footer.className = 'message-footer';
-    if (result.source) {
-      const source = document.createElement('a');
-      source.className = 'message-source';
-      source.href = result.source.url;
-      source.target = '_blank';
-      source.rel = 'noopener noreferrer';
-      source.textContent = `${ui[result.language].source}: ${result.source.file}`;
-      const status = document.createElement('span');
-      status.className = 'source-status';
-      status.textContent = result.source.status;
-      footer.append(source, status);
+    const resultSources = Array.isArray(result.sources)
+      ? result.sources
+      : (result.source ? [result.source] : []);
+    if (resultSources.length) {
+      const sourceList = document.createElement('div');
+      sourceList.className = 'message-sources';
+      resultSources.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'message-source-row';
+        const source = document.createElement('a');
+        source.className = 'message-source';
+        source.href = item.url;
+        source.target = '_blank';
+        source.rel = 'noopener noreferrer';
+        const label = item.kind === 'web' ? ui[result.language].webSource : ui[result.language].source;
+        source.textContent = `${label}: ${item.file || item.title}`;
+        const status = document.createElement('span');
+        status.className = `source-status${item.kind === 'web' ? ' external' : ''}`;
+        status.textContent = item.status;
+        row.append(source, status);
+        sourceList.append(row);
+      });
+      footer.append(sourceList);
+    }
+    if (['unavailable', 'empty', 'rate_limited'].includes(result.webSearchStatus)) {
+      const searchState = document.createElement('span');
+      searchState.className = 'search-state';
+      searchState.textContent = result.webSearchStatus === 'rate_limited'
+        ? ui[result.language].searchLimited
+        : ui[result.language].searchUnavailable;
+      footer.append(searchState);
     }
 
     const copy = document.createElement('button');
@@ -108,10 +129,10 @@
     scrollToLatest();
   }
 
-  function addTyping(language) {
+  function addTyping(language, isWebSearch) {
     const typing = document.createElement('div');
     typing.className = 'message bot typing';
-    typing.setAttribute('aria-label', ui[language].searching);
+    typing.setAttribute('aria-label', isWebSearch ? ui[language].webSearching : ui[language].searching);
     typing.innerHTML = '<i></i><i></i><i></i>';
     messages.append(typing);
     scrollToLatest();
@@ -120,6 +141,7 @@
 
   function setBusy(isBusy) {
     sendButton.disabled = isBusy;
+    webSearch.disabled = isBusy;
     [...chipsBox.querySelectorAll('button')].forEach(chip => { chip.disabled = isBusy; });
     messages.setAttribute('aria-busy', String(isBusy));
   }
@@ -191,12 +213,13 @@
     setBusy(true);
     isPending = true;
     const token = ++requestToken;
-    const typing = addTyping(language);
-    liveStatus.textContent = ui[language].searching;
+    const useWebSearch = webSearch.checked;
+    const typing = addTyping(language, useWebSearch);
+    liveStatus.textContent = useWebSearch ? ui[language].webSearching : ui[language].searching;
 
     const minimumDelay = new Promise(resolve => window.setTimeout(resolve, 250));
     const [result] = await Promise.all([
-      client.reply(question, session, conversationHistory),
+      client.reply(question, session, conversationHistory, { webSearch: useWebSearch }),
       minimumDelay
     ]);
     if (token !== requestToken) return;
@@ -284,6 +307,6 @@
   updateMemoryUI();
   if (client.isRemoteEnabled) {
     assistantMode.lastChild.textContent = ' Публічна бета · серверний AI-діалог';
-    privacyNote.innerHTML = '<strong>Важливо:</strong> серверний режим увімкнений: поточне повідомлення, до 12 реплік контексту та коротка підказка ROZUM Core (маршрут і ID теми) надсилаються серверу. Якщо налаштована мовна модель, їй передаються поточне повідомлення, до 8 попередніх реплік і максимум два відкриті документи ROZUM. Сервіс не зберігає історію діалогу; обробка постачальником залежить від його умов. Локальна пам’ять зберігається лише після вашої згоди. Не вводьте особисті чи секретні дані.';
+    privacyNote.innerHTML = '<strong>Важливо:</strong> серверний режим увімкнений: поточне повідомлення, до 12 реплік контексту та коротка підказка ROZUM Core надсилаються серверу. Якщо ви вмикаєте веб-пошук, текст запитання також обробляє зовнішній пошуковий провайдер, а знайдені фрагменти передаються моделі як неперевірені джерела. Сервіс не зберігає історію діалогу; локальна пам’ять працює лише після вашої згоди. Не вводьте особисті чи секретні дані.';
   }
 })();

@@ -290,15 +290,17 @@ h1 span {
 .message p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
 .message-footer {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 7px;
   margin-top: 11px;
   padding-top: 9px;
   border-top: 1px solid rgba(110, 170, 211, .18);
 }
+.message-sources { display: grid; flex: 1 1 100%; gap: 6px; min-width: 0; }
+.message-source-row { display: flex; align-items: center; gap: 7px; min-width: 0; }
 .message-source {
-  max-width: 100%;
+  max-width: min(100%, 520px);
   overflow: hidden;
   color: #8fc8e8;
   font-size: 10px;
@@ -315,6 +317,14 @@ h1 span {
   font-size: 8px;
   font-weight: 800;
   letter-spacing: .07em;
+}
+.source-status.external { border-color: rgba(239, 191, 105, .35); color: #d9b778; }
+.search-state {
+  padding: 4px 7px;
+  border: 1px solid rgba(217, 157, 70, .35);
+  border-radius: 999px;
+  color: #d9b778;
+  font-size: 9px;
 }
 .copy-button {
   margin-left: auto;
@@ -386,7 +396,23 @@ textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(239, 191,
 .send-button span:last-child { font-size: 20px; line-height: 1; }
 .send-button:hover { filter: brightness(1.06); }
 .send-button:disabled, .chips button:disabled { cursor: wait; filter: grayscale(.35); opacity: .58; }
-.composer-hint { margin: 7px 3px 0; color: #5f7c94; font-size: 10px; }
+.composer-options { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 7px 3px 0; }
+.composer-hint { margin: 0; color: #5f7c94; font-size: 10px; }
+.web-search-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px;
+  border: 1px solid #315b7d;
+  border-radius: 999px;
+  background: rgba(10, 34, 58, .72);
+  color: #9cc5dc;
+  font-size: 10px;
+  cursor: pointer;
+}
+.web-search-toggle:has(input:checked) { border-color: rgba(239, 191, 105, .72); color: #f0cd8d; }
+.web-search-toggle input { width: 14px; height: 14px; margin: 0; accent-color: var(--gold); }
+.web-search-toggle:has(input:disabled) { cursor: wait; opacity: .58; }
 .memory-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 11px; }
 .memory-toggle { display: inline-flex; align-items: center; gap: 8px; color: #8da8be; font-size: 11px; cursor: pointer; }
 .memory-toggle input { width: 15px; height: 15px; margin: 0; accent-color: var(--gold); }
@@ -504,6 +530,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .composer { gap: 7px; }
   .send-button { width: 52px; justify-content: center; padding: 0; }
   .send-button span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+  .composer-options { justify-content: flex-end; }
   .composer-hint { display: none; }
   .memory-controls { align-items: flex-start; flex-direction: column; }
   .memory-dialog { padding: 17px; }

@@ -13,6 +13,7 @@
     'NORMATIVE / ACCEPTED',
     'INTERNAL / CONCEPT / NON-NORMATIVE'
   ]);
+  const WEB_SEARCH_STATUSES = new Set(['not_requested', 'success', 'empty', 'unavailable', 'rate_limited']);
 
   function safeBaseUrl(value) {
     const raw = String(value || '').trim().replace(/\/+$/, '');
@@ -44,6 +45,27 @@
     }
   }
 
+  function cleanWebCitation(value) {
+    if (!value || typeof value !== 'object') return null;
+    const title = String(value.title || '').replace(/\s+/g, ' ').trim().slice(0, 180);
+    const rawUrl = String(value.url || '').trim();
+    if (!title || !rawUrl || rawUrl.length > 2048) return null;
+    try {
+      const url = new URL(rawUrl);
+      if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) return null;
+      url.hash = '';
+      return {
+        file: title,
+        title,
+        url: url.href,
+        status: 'EXTERNAL / UNVALIDATED',
+        kind: 'web'
+      };
+    } catch {
+      return null;
+    }
+  }
+
   function cleanHistory(history) {
     if (!Array.isArray(history)) return [];
     return history.slice(-12).flatMap(turn => {
@@ -65,10 +87,17 @@
     const isRemoteEnabled = config.apiEnabled === true && Boolean(baseUrl) && typeof fetchImpl === 'function';
     const requestTimeoutMs = Math.max(1000, Math.min(Number(config.requestTimeoutMs) || 12000, 30000));
 
-    async function reply(question, session, history = []) {
+    async function reply(question, session, history = [], requestOptions = {}) {
       const local = engine.reply(question, session);
       const coreContext = core ? core.classify(local) : null;
-      const localResult = { ...local, core: coreContext, transport: 'local', provider: 'local-knowledge' };
+      const webSearchRequested = requestOptions.webSearch === true;
+      const localResult = {
+        ...local,
+        core: coreContext,
+        transport: 'local',
+        provider: 'local-knowledge',
+        webSearchStatus: webSearchRequested ? 'unavailable' : 'not_requested'
+      };
       if (!isRemoteEnabled) return localResult;
 
       const controller = typeof AbortController === 'function' ? new AbortController() : null;
@@ -79,6 +108,7 @@
           language: local.language,
           history: cleanHistory(history)
         };
+        if (webSearchRequested) requestBody.web_search = true;
         const requestContext = core && core.cleanRequestContext(coreContext);
         if (requestContext) requestBody.core_context = requestContext;
         const response = await fetchImpl(`${baseUrl}/v1/chat`, {
@@ -97,12 +127,20 @@
         }
         const replyText = payload.reply.trim();
         if (!replyText || replyText.length > 8000) throw new Error('remote reply is outside the allowed bounds');
-        const source = Array.isArray(payload.citations)
-          ? payload.citations.slice(0, 2).map(cleanCitation).find(Boolean) || null
-          : null;
+        const projectSources = Array.isArray(payload.citations)
+          ? payload.citations.slice(0, 2).map(cleanCitation).filter(Boolean)
+          : [];
+        const webSources = Array.isArray(payload.web_citations)
+          ? payload.web_citations.slice(0, 5).map(cleanWebCitation).filter(Boolean)
+          : [];
+        const sources = [...projectSources, ...webSources];
+        const source = sources[0] || null;
         const provider = typeof payload.provider === 'string' && /^[a-z0-9-]{1,64}$/.test(payload.provider)
           ? payload.provider
           : 'server';
+        const webSearchStatus = WEB_SEARCH_STATUSES.has(payload.web_search?.status)
+          ? payload.web_search.status
+          : (webSearchRequested ? 'unavailable' : 'not_requested');
 
         return {
           ...local,
@@ -110,8 +148,10 @@
           text: replyText,
           language: payload.language,
           source,
+          sources,
           transport: 'remote',
           provider,
+          webSearchStatus,
           requestId: typeof payload.request_id === 'string' ? payload.request_id.slice(0, 128) : null,
           validationState: 'PROPOSED'
         };
@@ -125,7 +165,7 @@
     return Object.freeze({ reply, isRemoteEnabled });
   }
 
-  const api = { create, safeBaseUrl, cleanCitation, cleanHistory };
+  const api = { create, safeBaseUrl, cleanCitation, cleanWebCitation, cleanHistory };
   if (typeof globalThis !== 'undefined') globalThis.ROZUMAssistantClient = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })();
