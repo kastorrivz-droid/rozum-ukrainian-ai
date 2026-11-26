@@ -32,6 +32,10 @@ for (const [question, expectedId, expectedLanguage] of standaloneCases) {
   console.log(`PASS ${expectedId}: ${result.id}/${result.language}`);
 }
 
+assert.equal(engine.detectLanguage('Какая столица Франции?'), 'ru');
+assert.equal(engine.detectLanguage('Яка столиця Франції?'), 'uk');
+console.log('PASS general-question language detection');
+
 let conversation = engine.createSession('ru');
 const first = ask('Расскажи про Ривза', conversation);
 conversation = first.state;

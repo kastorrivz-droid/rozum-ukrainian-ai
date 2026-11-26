@@ -20,6 +20,7 @@ placing provider credentials in browser code.
   length-limited turns; it does not write prompt history to this service;
 - Argos guard report is distinct from the Reeves response role;
 - real request-byte limit, CORS allowlist and single-process rate limit;
+- chat requests with a missing or unapproved browser `Origin` are rejected;
 - browser automatically falls back to the local 21-topic engine.
 
 The browser also has separate opt-in local memory: it is disabled by default,
@@ -52,6 +53,10 @@ The key must never go in GitHub Pages assets, the repository, a screenshot, or a
 browser request. The frontend configuration remains public and secret-free:
 set `apiEnabled: true` and the deployed HTTPS `apiBaseUrl` only after the
 backend, privacy notice and cost controls are ready.
+
+The browser `Origin` check reduces cross-site use but is not authentication: a
+non-browser client can forge that header. Public paid traffic still requires the
+shared cost controls described below.
 
 ## Production boundary
 

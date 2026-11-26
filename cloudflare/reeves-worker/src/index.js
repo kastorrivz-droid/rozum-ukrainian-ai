@@ -110,10 +110,11 @@ function detectLanguage(value, message) {
   const text = message.toLowerCase();
   if (/[іїєґ]/u.test(text)) return "uk";
   if (/[ыэъё]/u.test(text)) return "ru";
-  const russian = ["ты", "тебе", "можешь", "сейчас", "спасибо", "что", "кто", "как"];
-  const ukrainian = ["тобі", "можеш", "зараз", "дякую", "що", "хто", "як"];
-  const ruScore = russian.reduce((n, word) => n + (text.includes(word) ? 1 : 0), 0);
-  const ukScore = ukrainian.reduce((n, word) => n + (text.includes(word) ? 1 : 0), 0);
+  const words = new Set(text.match(/[a-zа-яіїєґ0-9]+/gu) || []);
+  const russian = ["ты", "тебе", "можешь", "сейчас", "спасибо", "что", "кто", "как", "какая", "какой", "какое", "какие", "сколько", "где", "когда", "зачем", "столица", "объясни", "расскажи"];
+  const ukrainian = ["тобі", "можеш", "зараз", "дякую", "що", "хто", "як", "яка", "який", "яке", "які", "скільки", "де", "коли", "навіщо", "столиця", "поясни", "розкажи"];
+  const ruScore = russian.reduce((n, word) => n + (words.has(word) ? 1 : 0), 0);
+  const ukScore = ukrainian.reduce((n, word) => n + (words.has(word) ? 1 : 0), 0);
   return ruScore > ukScore ? "ru" : "uk";
 }
 
@@ -208,7 +209,8 @@ export default {
     if (!ALLOWED_ORIGINS.has(origin || "")) {
       return jsonResponse({ error: { code: "ORIGIN_NOT_ALLOWED" } }, 403, origin);
     }
-    if (!(request.headers.get("Content-Type") || "").toLowerCase().includes("application/json")) {
+    const mediaType = (request.headers.get("Content-Type") || "").split(";", 1)[0].trim().toLowerCase();
+    if (mediaType !== "application/json") {
       return jsonResponse({ error: { code: "UNSUPPORTED_MEDIA_TYPE" } }, 415, origin);
     }
 
@@ -276,8 +278,9 @@ export default {
     try {
       const generated = await env.AI.run(MODEL, {
         messages,
-        max_tokens: 500,
+        max_completion_tokens: 500,
         temperature: 0.35,
+        store: false,
         stream: false
       });
       const reply = responseText(generated);

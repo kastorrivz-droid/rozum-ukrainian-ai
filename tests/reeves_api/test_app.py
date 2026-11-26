@@ -1,18 +1,33 @@
 from __future__ import annotations
 
 import json
+import os
 import unittest
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
 from reeves_api.app import create_app
-from reeves_api.provider import load_provider
+from reeves_api.provider import ProviderReply, load_provider
+
+
+class ScriptedGeneralProvider:
+    name = "scripted-test"
+
+    async def generate(self, request, language):
+        answers = {
+            "Какая столица Франции?": "Столица Франции — Париж.",
+            "Сколько будет семь умножить на восемь?": "Семь умножить на восемь — 56.",
+            "Чому небо блакитне?": "Небо здається блакитним через розсіювання сонячного світла в атмосфері.",
+        }
+        return ProviderReply(text=answers[request.message], citations=())
 
 
 class ReevesAPITests(unittest.TestCase):
     def setUp(self) -> None:
         self.client = TestClient(
             create_app(allowed_origins=["https://kastorrivz-droid.github.io"]),
+            headers={"Origin": "https://kastorrivz-droid.github.io"},
             raise_server_exceptions=False,
         )
 
@@ -93,6 +108,7 @@ class ReevesAPITests(unittest.TestCase):
     def test_actual_body_limit_and_content_encoding_are_enforced(self) -> None:
         with TestClient(
             create_app(allowed_origins=["https://example.com"], max_body_bytes=128),
+            headers={"Origin": "https://example.com"},
             raise_server_exceptions=False,
         ) as client:
             oversized = client.post(
@@ -105,9 +121,15 @@ class ReevesAPITests(unittest.TestCase):
                 content=b"{}",
                 headers={"Content-Type": "application/json", "Content-Encoding": "gzip"},
             )
+            wrong_media_type = client.post(
+                "/v1/chat",
+                content=b'{"message":"hello"}',
+                headers={"Content-Type": "application/jsonp"},
+            )
         self.assertEqual(oversized.status_code, 413)
         self.assertEqual(oversized.json()["error"]["code"], "PAYLOAD_TOO_LARGE")
         self.assertEqual(compressed.status_code, 415)
+        self.assertEqual(wrong_media_type.status_code, 415)
 
     def test_cors_is_restricted_to_configured_site(self) -> None:
         allowed = self.client.options(
@@ -124,6 +146,21 @@ class ReevesAPITests(unittest.TestCase):
         self.assertEqual(allowed.headers.get("access-control-allow-origin"), "https://kastorrivz-droid.github.io")
         self.assertIsNone(denied.headers.get("access-control-allow-origin"))
 
+    def test_chat_rejects_missing_or_unapproved_browser_origin(self) -> None:
+        with TestClient(
+            create_app(allowed_origins=["https://kastorrivz-droid.github.io"]),
+            raise_server_exceptions=False,
+        ) as client:
+            missing = client.post("/v1/chat", json={"message": "Привіт"})
+            denied = client.post(
+                "/v1/chat",
+                json={"message": "Привіт"},
+                headers={"Origin": "https://example.com"},
+            )
+        self.assertEqual(missing.status_code, 403)
+        self.assertEqual(denied.status_code, 403)
+        self.assertEqual(missing.json()["detail"]["code"], "ORIGIN_NOT_ALLOWED")
+
     def test_rate_limit_fails_closed(self) -> None:
         with TestClient(
             create_app(
@@ -131,6 +168,7 @@ class ReevesAPITests(unittest.TestCase):
                 rate_limit=1,
                 rate_window_seconds=60,
             ),
+            headers={"Origin": "https://example.com"},
             raise_server_exceptions=False,
         ) as client:
             first = client.post("/v1/chat", json={"message": "Привіт"})
@@ -142,6 +180,45 @@ class ReevesAPITests(unittest.TestCase):
     def test_unknown_provider_is_not_silently_accepted(self) -> None:
         with self.assertRaises(RuntimeError):
             load_provider("paid-provider-without-adapter")
+
+    def test_openai_provider_fails_closed_without_server_configuration(self) -> None:
+        with patch.dict(os.environ, {}, clear=True), self.assertRaises(RuntimeError):
+            load_provider("openai")
+
+    def test_unsafe_origin_configuration_is_rejected(self) -> None:
+        with self.assertRaises(RuntimeError):
+            create_app(allowed_origins=["https://example.com/path"])
+
+    def test_general_questions_pass_through_the_server_contract(self) -> None:
+        cases = (
+            ("Какая столица Франции?", "ru", "Столица Франции — Париж."),
+            ("Сколько будет семь умножить на восемь?", "ru", "Семь умножить на восемь — 56."),
+            (
+                "Чому небо блакитне?",
+                "uk",
+                "Небо здається блакитним через розсіювання сонячного світла в атмосфері.",
+            ),
+        )
+        with TestClient(
+            create_app(
+                provider=ScriptedGeneralProvider(),
+                allowed_origins=["https://kastorrivz-droid.github.io"],
+            ),
+            headers={"Origin": "https://kastorrivz-droid.github.io"},
+            raise_server_exceptions=False,
+        ) as client:
+            for question, language, expected in cases:
+                with self.subTest(question=question):
+                    response = client.post(
+                        "/v1/chat",
+                        json={"message": question, "language": "auto"},
+                    )
+                    self.assertEqual(response.status_code, 200, response.text)
+                    payload = response.json()
+                    self.assertEqual(payload["reply"], expected)
+                    self.assertEqual(payload["language"], language)
+                    self.assertEqual(payload["provider"], "scripted-test")
+                    self.assertEqual(payload["citations"], [])
 
 
 if __name__ == "__main__":

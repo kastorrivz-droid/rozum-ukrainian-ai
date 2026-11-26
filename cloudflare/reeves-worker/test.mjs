@@ -40,6 +40,59 @@ test("chat preserves the public browser API response contract", async () => {
   assert.equal(response.headers.get("Access-Control-Allow-Origin"), origin);
 });
 
+test("chat uses bounded non-stored generation settings", async () => {
+  let observedInput;
+  const env = {
+    AI: {
+      run: async (_model, input) => {
+        observedInput = input;
+        return { response: "Коротка відповідь." };
+      }
+    }
+  };
+  const response = await worker.fetch(new Request("https://worker.test/v1/chat", {
+    method: "POST",
+    headers: { Origin: origin, "Content-Type": "application/json" },
+    body: JSON.stringify({ message: "Привіт", language: "uk" })
+  }), env);
+  assert.equal(response.status, 200);
+  assert.equal(observedInput.max_completion_tokens, 500);
+  assert.equal(Object.hasOwn(observedInput, "max_tokens"), false);
+  assert.equal(observedInput.store, false);
+  assert.equal(observedInput.stream, false);
+});
+
+test("general questions use the model without invented ROZUM citations", async () => {
+  const answers = new Map([
+    ["Какая столица Франции?", "Столица Франции — Париж."],
+    ["Сколько будет семь умножить на восемь?", "Семь умножить на восемь — 56."],
+    ["Чому небо блакитне?", "Небо здається блакитним через розсіювання світла."]
+  ]);
+  const env = {
+    AI: {
+      run: async (_model, input) => {
+        const message = input.messages[input.messages.length - 1].content;
+        return { response: answers.get(message) };
+      }
+    }
+  };
+  for (const [message, expected] of answers) {
+    const language = message.startsWith("Чому") ? "uk" : "ru";
+    const response = await worker.fetch(new Request("https://worker.test/v1/chat", {
+      method: "POST",
+      headers: { Origin: origin, "Content-Type": "application/json" },
+      body: JSON.stringify({ message, language: "auto" })
+    }), env);
+    const payload = await response.json();
+    assert.equal(response.status, 200);
+    assert.equal(payload.reply, expected);
+    assert.equal(payload.language, language);
+    assert.deepEqual(payload.citations, []);
+    assert.equal(payload.core.route, "general_dialogue");
+    assert.deepEqual(payload.core.sources_used, []);
+  }
+});
+
 test("chat rejects origins outside the allowlist", async () => {
   const response = await worker.fetch(new Request("https://worker.test/v1/chat", {
     method: "POST",
@@ -56,4 +109,13 @@ test("chat rejects malformed JSON", async () => {
     body: "{broken"
   }), { AI: {} });
   assert.equal(response.status, 400);
+});
+
+test("chat requires the exact JSON media type", async () => {
+  const response = await worker.fetch(new Request("https://worker.test/v1/chat", {
+    method: "POST",
+    headers: { Origin: origin, "Content-Type": "application/jsonp" },
+    body: JSON.stringify({ message: "hello" })
+  }), { AI: {} });
+  assert.equal(response.status, 415);
 });

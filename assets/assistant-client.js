@@ -1,15 +1,46 @@
 (() => {
   'use strict';
 
+  const SOURCE_PATH_PREFIX = '/kastorrivz-droid/rozum-ukrainian-ai/blob/main/';
+  const SOURCE_STATUSES = new Set([
+    'PROPOSED',
+    'VALIDATED',
+    'ACCEPTED',
+    'ACCEPTED / CONTROL DOCUMENT',
+    'ACCEPTED / WORKING BASELINE',
+    'VALIDATED / STRUCTURAL BASELINE',
+    'NORMATIVE / LOCKED',
+    'NORMATIVE / ACCEPTED',
+    'INTERNAL / CONCEPT / NON-NORMATIVE'
+  ]);
+
   function safeBaseUrl(value) {
     const raw = String(value || '').trim().replace(/\/+$/, '');
     if (!raw) return '';
     try {
       const parsed = new URL(raw);
       const local = parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost';
-      return parsed.protocol === 'https:' || (parsed.protocol === 'http:' && local) ? parsed.href.replace(/\/+$/, '') : '';
+      const safeProtocol = parsed.protocol === 'https:' || (parsed.protocol === 'http:' && local);
+      if (!safeProtocol || parsed.username || parsed.password || parsed.search || parsed.hash) return '';
+      return `${parsed.origin}${parsed.pathname.replace(/\/+$/, '')}`;
     } catch {
       return '';
+    }
+  }
+
+  function cleanCitation(value) {
+    if (!value || typeof value !== 'object') return null;
+    const title = String(value.title || '').trim();
+    const status = String(value.status || '').trim();
+    if (!/^[0-9]{2}_[A-Z0-9_]+\.md$/.test(title) || !SOURCE_STATUSES.has(status)) return null;
+    try {
+      const url = new URL(String(value.url || '').trim());
+      const safeRepositoryPath = url.origin === 'https://github.com'
+        && url.pathname === `${SOURCE_PATH_PREFIX}${title}`;
+      if (!safeRepositoryPath || url.username || url.password || url.search || url.hash) return null;
+      return { file: title, url: url.href, status };
+    } catch {
+      return null;
     }
   }
 
@@ -64,21 +95,25 @@
         if (!payload || typeof payload.reply !== 'string' || !['uk', 'ru'].includes(payload.language)) {
           throw new Error('remote response contract mismatch');
         }
-        const citation = Array.isArray(payload.citations) ? payload.citations[0] : null;
-        const source = citation && citation.url && citation.title
-          ? { file: citation.title, url: citation.url, status: citation.status || 'PROPOSED' }
+        const replyText = payload.reply.trim();
+        if (!replyText || replyText.length > 8000) throw new Error('remote reply is outside the allowed bounds');
+        const source = Array.isArray(payload.citations)
+          ? payload.citations.slice(0, 2).map(cleanCitation).find(Boolean) || null
           : null;
+        const provider = typeof payload.provider === 'string' && /^[a-z0-9-]{1,64}$/.test(payload.provider)
+          ? payload.provider
+          : 'server';
 
         return {
           ...local,
           core: (core && core.cleanResponseContext(payload.core)) || coreContext,
-          text: payload.reply,
+          text: replyText,
           language: payload.language,
           source,
           transport: 'remote',
-          provider: payload.provider || 'server',
-          requestId: payload.request_id || null,
-          validationState: payload.validation_state || 'PROPOSED'
+          provider,
+          requestId: typeof payload.request_id === 'string' ? payload.request_id.slice(0, 128) : null,
+          validationState: 'PROPOSED'
         };
       } catch {
         return { ...localResult, transport: 'local-fallback', provider: 'local-knowledge' };
@@ -90,7 +125,7 @@
     return Object.freeze({ reply, isRemoteEnabled });
   }
 
-  const api = { create, safeBaseUrl, cleanHistory };
+  const api = { create, safeBaseUrl, cleanCitation, cleanHistory };
   if (typeof globalThis !== 'undefined') globalThis.ROZUMAssistantClient = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })();

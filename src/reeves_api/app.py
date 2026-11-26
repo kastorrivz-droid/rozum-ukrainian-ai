@@ -84,7 +84,8 @@ class BodyLimitMiddleware:
             )
             await response(scope, receive, send)
             return
-        if "application/json" not in headers.get("content-type", "").lower():
+        media_type = headers.get("content-type", "").split(";", 1)[0].strip().lower()
+        if media_type != "application/json":
             response = _error_response(
                 415,
                 "UNSUPPORTED_MEDIA_TYPE",
@@ -170,19 +171,37 @@ class SlidingWindowRateLimiter:
 
 
 def _origin_is_safe(origin: str) -> bool:
-    parsed = urlparse(origin)
-    if parsed.scheme == "https" and parsed.netloc:
+    try:
+        parsed = urlparse(origin)
+        parsed.port
+    except ValueError:
+        return False
+    if (
+        not parsed.hostname
+        or parsed.username
+        or parsed.password
+        or parsed.path not in {"", "/"}
+        or parsed.params
+        or parsed.query
+        or parsed.fragment
+    ):
+        return False
+    if parsed.scheme == "https":
         return True
     return parsed.scheme == "http" and parsed.hostname in {"127.0.0.1", "localhost"}
+
+
+def _normalize_allowed_origins(values: Iterable[str]) -> tuple[str, ...]:
+    origins = tuple(dict.fromkeys(item.strip().rstrip("/") for item in values if item.strip()))
+    if not origins or any(origin == "*" or not _origin_is_safe(origin) for origin in origins):
+        raise RuntimeError("REEVES_ALLOWED_ORIGINS contains an unsafe origin")
+    return origins
 
 
 def _allowed_origins_from_env() -> tuple[str, ...]:
     raw = os.getenv("REEVES_ALLOWED_ORIGINS", "")
     values = tuple(item.strip().rstrip("/") for item in raw.split(",") if item.strip())
-    origins = values or DEFAULT_ALLOWED_ORIGINS
-    if any(origin == "*" or not _origin_is_safe(origin) for origin in origins):
-        raise RuntimeError("REEVES_ALLOWED_ORIGINS contains an unsafe origin")
-    return origins
+    return _normalize_allowed_origins(values or DEFAULT_ALLOWED_ORIGINS)
 
 
 def create_app(
@@ -194,7 +213,11 @@ def create_app(
     rate_window_seconds: int = DEFAULT_RATE_WINDOW_SECONDS,
 ) -> FastAPI:
     selected_provider = provider or load_provider(os.getenv("REEVES_PROVIDER", "mock"))
-    origins = tuple(allowed_origins or _allowed_origins_from_env())
+    origins = (
+        _normalize_allowed_origins(allowed_origins)
+        if allowed_origins is not None
+        else _allowed_origins_from_env()
+    )
     limiter = SlidingWindowRateLimiter(rate_limit, rate_window_seconds)
 
     app = FastAPI(
@@ -239,6 +262,14 @@ def create_app(
 
     @app.post("/v1/chat", response_model=ChatResponse)
     async def chat(payload: ChatRequest, request: Request) -> ChatResponse:
+        if request.headers.get("origin", "").rstrip("/") not in origins:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "ORIGIN_NOT_ALLOWED",
+                    "message": "The browser origin is not allowed.",
+                },
+            )
         client = request.client.host if request.client else "unknown"
         if not await limiter.allow(client):
             raise HTTPException(

@@ -15,6 +15,7 @@ The normative ROZUM_AI_v2.1 receiver remains a separate protocol service. Ordina
 - Cloudflare Workers Free includes 10,000 Neurons per day for Workers AI. The daily allocation resets at 00:00 UTC. On the Free plan, requests stop when the allocation is exhausted; the quota is not unlimited.
 - Keep the Cloudflare account on the Free plan for this test. Paid-plan usage above the free allocation is billed.
 - No model-provider key is stored in this repository. The AI binding is configured in `wrangler.jsonc`.
+- The Worker explicitly requests non-stored output and caps each answer at 500 completion tokens.
 
 Official references:
 - [Gemma 4 model card](https://ai.google.dev/gemma/docs/core/model_card_4)

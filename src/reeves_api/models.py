@@ -64,10 +64,10 @@ class ChatResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     request_id: str
-    reply: str
+    reply: str = Field(min_length=1, max_length=8_000)
     language: ResolvedLanguage
     role: Literal["reeves"] = "reeves"
-    provider: str
+    provider: str = Field(min_length=1, max_length=64, pattern=r"^[a-z0-9-]+$")
     validation_state: Literal["PROPOSED"] = "PROPOSED"
     memory_persisted: Literal[False] = False
     citations: list[Citation]

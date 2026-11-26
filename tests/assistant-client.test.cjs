@@ -6,7 +6,30 @@ const clientModule = require('../assets/assistant-client.js');
   assert.equal(clientModule.safeBaseUrl('http://example.com'), '');
   assert.equal(clientModule.safeBaseUrl('https://api.example.com/'), 'https://api.example.com');
   assert.equal(clientModule.safeBaseUrl('http://127.0.0.1:8000/'), 'http://127.0.0.1:8000');
+  assert.equal(clientModule.safeBaseUrl('https://user:secret@api.example.com'), '');
+  assert.equal(clientModule.safeBaseUrl('https://api.example.com?token=public-but-wrong'), '');
   console.log('PASS safe API URL policy');
+
+  assert.deepEqual(clientModule.cleanCitation({
+    title: '06_REEVES.md',
+    url: 'https://github.com/kastorrivz-droid/rozum-ukrainian-ai/blob/main/06_REEVES.md',
+    status: 'PROPOSED'
+  }), {
+    file: '06_REEVES.md',
+    url: 'https://github.com/kastorrivz-droid/rozum-ukrainian-ai/blob/main/06_REEVES.md',
+    status: 'PROPOSED'
+  });
+  assert.equal(clientModule.cleanCitation({
+    title: '06_REEVES.md',
+    url: 'javascript:alert(1)',
+    status: 'PROPOSED'
+  }), null);
+  assert.equal(clientModule.cleanCitation({
+    title: '06_REEVES.md',
+    url: 'https://github.com/kastorrivz-droid/rozum-ukrainian-ai/blob/main/01_ROZUM_VISION.md',
+    status: 'PROPOSED'
+  }), null);
+  console.log('PASS citations are restricted to the public ROZUM repository');
 
   const localClient = clientModule.create({
     engine,
@@ -33,7 +56,11 @@ const clientModule = require('../assets/assistant-client.js');
             language: 'ru',
             provider: 'mock',
             validation_state: 'PROPOSED',
-            citations: [{ title: '06_REEVES.md', url: 'https://example.com/reeves', status: 'PROPOSED' }]
+            citations: [{
+              title: '06_REEVES.md',
+              url: 'https://github.com/kastorrivz-droid/rozum-ukrainian-ai/blob/main/06_REEVES.md',
+              status: 'PROPOSED'
+            }]
           };
         }
       };

@@ -31,10 +31,13 @@
    inspect and delete them. The API service persists no prompt history.
 8. The Cloudflare Worker enforces an origin allowlist, actual body-size limits,
    bounded history and a best-effort per-isolate sliding-window rate limit. The
-   optional Python service also keeps provider credentials server-side.
+   optional Python service also keeps provider credentials server-side and
+   rejects chat requests from missing or unapproved browser origins.
 9. The Worker retrieves at most two status-attributed public ROZUM documents.
    The public Pages configuration remains disabled until a backend is deployed
    and the privacy and usage limits are reviewed.
+10. The browser accepts citation links only from the public ROZUM repository and
+    rejects malformed or oversized model replies before rendering them.
 
 ## Trust boundaries
 
