@@ -57,6 +57,7 @@ test("chat uses bounded non-stored generation settings", async () => {
   }), env);
   assert.equal(response.status, 200);
   assert.equal(observedInput.max_completion_tokens, 500);
+  assert.deepEqual(observedInput.chat_template_kwargs, { enable_thinking: false });
   assert.equal(Object.hasOwn(observedInput, "max_tokens"), false);
   assert.equal(observedInput.store, false);
   assert.equal(observedInput.stream, false);

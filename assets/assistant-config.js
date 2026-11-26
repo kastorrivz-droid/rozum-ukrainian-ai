@@ -3,8 +3,8 @@
 
   // Public, non-secret runtime configuration. Never place provider keys here.
   globalThis.ROZUMAssistantConfig = Object.freeze({
-    apiEnabled: false,
-    apiBaseUrl: '',
-    requestTimeoutMs: 12000
+    apiEnabled: true,
+    apiBaseUrl: 'https://rozum-reeves-api.rozum-reeves-worker.workers.dev',
+    requestTimeoutMs: 25000
   });
 })();

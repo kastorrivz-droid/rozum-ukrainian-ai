@@ -278,6 +278,7 @@ export default {
     try {
       const generated = await env.AI.run(MODEL, {
         messages,
+        chat_template_kwargs: { enable_thinking: false },
         max_completion_tokens: 500,
         temperature: 0.35,
         store: false,
@@ -302,7 +303,12 @@ export default {
         core: { route: coreContext.route, topic_id: coreContext.topic_id, sources_used: excerpts.map((source) => source.file) },
         guard: { role: "argos", status: "PASS", checks: ["message_required", "content_type", "body_limit", "origin_allowlist", "rate_limit"] }
       }, 200, origin);
-    } catch {
+    } catch (error) {
+      console.error("Workers AI request failed", {
+        name: typeof error?.name === "string" ? error.name : "Error",
+        message: typeof error?.message === "string" ? error.message.slice(0, 500) : "Unknown provider error",
+        code: typeof error?.code === "number" || typeof error?.code === "string" ? error.code : null
+      });
       return jsonResponse({
         error: {
           code: "PROVIDER_UNAVAILABLE",
