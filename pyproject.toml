@@ -12,7 +12,7 @@ license = {text = "Proprietary"}
 authors = [{name = "Vladyslav Koshelev"}]
 dependencies = [
   "cryptography==50.0.2",
-  "fastapi==0.141.1",
+  "fastapi==0.165.0",
   "jsonschema==4.26.0",
   "rfc3339-validator==0.1.4",
   "rfc8785==0.1.4",
